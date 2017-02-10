@@ -9,16 +9,82 @@ script options:
 
 #Do not change these unless you want all hell to brake loose!
 options:
-	MCRVER: 1.9
-	configver: granite
+	MCRVER: 2.0
+	configver: bullhead
 
 #Functions
+
+command /ttest <player>:
+	trigger:
+		set target of player to arg-1
+
+function Beam(e1: entity , e2: entity):
+	spawn a squid at location 0 meter behind {_e1}'s head
+	set {_el} to last spawned entity
+	set target of {_el} to {_e2}
+	apply invisibility to the last spawned entity
+	add "{CustomName:""BeamGuar"", NoGravity:1, Silent:1, NoAI:1}" to nbt of last spawned entity
+	set {_targLoc} to location of {_e2}
+    
+	loop 100 times:
+		teleport {_el} to location 0 meter behind {_e1}'s head
+		set target of {_el} to {_e2}
+		add "{Motion:[0.0,0.0,0.0]}" to nbt of {_el}
+		if "%{_e2}'s name%" is "BeamCow":
+			teleport {_e2} to {_targLoc}
+			add "{Motion:[0.0,0.0,0.0]}" to nbt of {_e2}
+		wait 1 tick
+
+	create a safe explosion with force 2 at {_e1}
+	loop entities in radius 3 of {_e2}:
+		make {_e1} damage loop-entity by (3 - (distance between loop-entity and {_e2}))
+	teleport {_el} 300 blocks below {_el}
+	teleport {_e2} 300 blocks below {_e2}
+	kill {_el}
+	kill {_e2}
+
+function ClientBeam(e1: entity , e3: entity , e2: entity):
+	spawn a cow at location of {_e2}
+	set {_c} to last spawned entity
+	add "{CustomName:""BeamCow"", NoGravity:1, Silent:1}" to nbt of last spawned entity
+	spawn a guardian at location 1 meter behind {_e1}'s head
+	set {_el} to last spawned entity
+	set target of {_el} to {_e2}
+	loop all players:
+		protocol hide {_e1} from loop-player    
+		protocol hide {_e2} from loop-player
+	protocol show {_e1} to {_e3}
+	protocol show {_e2} to {_e3}
+	apply invisibility to {_c}
+	apply invisibility to the last spawned entity
+	add "{CustomName:""BeamGuar"", NoGravity:1, Silent:1}" to nbt of last spawned entity
+	set {_targLoc} to location of {_e2}
+    
+	loop 100 times:
+		teleport {_el} to location 1 meter behind {_e1}'s head
+		add "{Motion:[0.0,0.0,0.0]}" to nbt of {_el}
+		if "%{_e2}'s name%" is "BeamCow":
+			teleport {_e2} to {_targLoc}
+			add "{Motion:[0.0,0.0,0.0]}" to nbt of {_e2}
+		wait 1 tick
+
+	create a safe explosion with force 2 at {_e2}
+	loop entities in radius 3 of {_c}:
+		make {_e1} damage loop-entity by (3 - (distance between loop-entity and {_c}))
+	teleport {_el} 300 blocks below {_el}
+	teleport {_e2} 300 blocks below {_e2}
+	kill {_el}
+	kill {_c}
 
 function configRefresh(n: number) :: number:
 	set {mineplex.config.config} to value "config" get of "plugins/Mineplex-Core-Remake/config.yml"
 	set {mineplex.config.servername} to value "servername" get of "plugins/Mineplex-Core-Remake/config.yml"
 	set {mineplex.config.website} to value "website" get of "plugins/Mineplex-Core-Remake/config.yml"
 	set {mineplex.config.appealwebsite} to value "appealwebsite" get of "plugins/Mineplex-Core-Remake/config.yml"
+	set {mineplex.config.ruleswebsite} to value "ruleswebsite" get of "plugins/Mineplex-Core-Remake/config.yml"
+	set {mineplex.config.youtube} to value "youtube" get of "plugins/Mineplex-Core-Remake/config.yml"
+	set {mineplex.config.twitter} to value "twitter" get of "plugins/Mineplex-Core-Remake/config.yml"
+	set {mineplex.config.shoplink} to value "shoplink" get of "plugins/Mineplex-Core-Remake/config.yml"
 
 function configPopulate(n: number) :: number:
 	create file "plugins/Mineplex-Core-Remake/config.yml"
@@ -26,6 +92,10 @@ function configPopulate(n: number) :: number:
 	set "servername" to "MINEPLEX" in yaml file "plugins/Mineplex-Core-Remake/config.yml"
 	set "website" to "www.mineplex.com" in yaml file "plugins/Mineplex-Core-Remake/config.yml"
 	set "appealwebsite" to "www.mineplex.com/appeals" in yaml file "plugins/Mineplex-Core-Remake/config.yml"
+	set "ruleswebsite" to "www.mineplex.com/rules" in yaml file "plugins/Mineplex-Core-Remake/config.yml"
+	set "youtube" to "http://youtube.com/mineplexgamesofficial" in yaml file "plugins/Mineplex-Core-Remake/config.yml"
+	set "twitter" to "http://twitter.com/mineplex" in yaml file "plugins/Mineplex-Core-Remake/config.yml"
+	set "shoplink" to "www.mineplex.com/shop" in yaml file "plugins/Mineplex-Core-Remake/config.yml"
 
 function updateRankAPI(p: player) :: player:
 	wait 5 ticks
@@ -40,6 +110,8 @@ function updateRankAPI(p: player) :: player:
 		set {mineplex.api.displayname.%{_p}%} to "%{mineplex.disguise.%{_p}%}%"
 	else:
 		set {_br} to uncolored {mineplex.rank.%{_p}%}
+		if {_br} is "":
+			set {_br} to "No Rank"
 		set {mineplex.api.displayrank.%{_p}%} to "%{_br}%"
 		set {mineplex.api.displayname.%{_p}%} to "%{_p}%"
 
@@ -78,6 +150,9 @@ function gwenAlert(p: player , r: text) :: number:
 
 #Config Loading
 
+on script unload:
+	broadcast "&9MCR> &7Mineplex Core is recompiling!"
+
 on load:
 	if file "plugins/Mineplex-Core-Remake/config.yml" doesn't exists:
 		configPopulate(1)
@@ -97,21 +172,24 @@ on load:
 		set {mineplex.usescoreboard} to true
 
 #Main Command/Toggles
-command /mineplex-core <string> [<string>]:
+command /mineplex-core <string> [<string>] [<string>]:
 	usage: &9Do /mineplex-core help
 	permission: op
-	permission message: &9Permissions> &7This requires Permmission Rank [&9OP&7].
+	permission message: &9Permissions> &7This requires Permission Rank [&9OP&7].
 	trigger:
 		if argument 1 is "help":
 			send "&9Plugin> &7Mineplex Core"
 			send "&9Plugin> &7Running MCR: &e{@MCRVER}"
-			send "&9Plugin> &7by WheezyGold7931, LimeGlass, Citrin_, and HappyLuigit"
+			send "&9Plugin> &7by WheezyGold7931, LimeGlass, Citrin_, HappyLuigit, and Dysometrix"
 			send ""
 			send "&9Mineplex Core> &7Listing Mineplex Core Options:"
 			send "&f/mineplex-core useChat (true/false): &eToggles this plugin to take overide the chat to mineplex's format."
-			send "&f/mineplex-core setAdmin (Player): &eGives the selected player admin perms (For all mineplex commands)"
+			send "&f/mineplex-core setAdmin (Player): &eGives the selected player admin perms (For all mineplex commands)!"
 			send "&f/mineplex-core titleOnJoin (true/false): &eToggles if players will see news on join!"
-			send "&f/mineplex-core useScoreboard (true/false) 7eToggles if you want to use Mineplex Core's Scoreboard"
+			send "&f/mineplex-core useScoreboard (true/false) 7eToggles if you want to use Mineplex Core's Scoreboard!"
+			send "&f/mineplex-core chestPoint (1/2/3/4): &eSets a chest point to your target block!"
+			send "&f/mineplex-core chestPointSub (1/2/3/4) (1/2/3/4/5/6/7/8): &eSets a chest point to your target block!"
+			send "&f/mineplex-core spawnCarl: &eSummons carl to your location"
 			send "&f/mineplex-core reload : &eReloads the config for Mineplex Core!"
 		else if argument 1 is "useChat":
 			if argument 2 is "true":
@@ -153,6 +231,764 @@ command /mineplex-core <string> [<string>]:
 					send "&9Mineplex Core> &7Scoreboard Disabled!"
 					loop all players:
 						wipe loop-player's sidebar
+		else if argument 1 is "chestPoint":
+			if argument 2 is set:
+				if arg 2 is "1":
+					set {mineplex.chestpoint.1} to target block
+					send "&9Treasure> &7Set chest point 1 to your target block!"
+				else if arg 2 is "2":
+					set {mineplex.chestpoint.2} to target block
+					send "&9Treasure> &7Set chest point 2 to your target block!"
+				else if arg 2 is "3":
+					set {mineplex.chestpoint.3} to target block
+					send "&9Treasure> &7Set chest point 3 to your target block!"
+				else if arg 2 is "4":
+					set {mineplex.chestpoint.4} to target block
+					send "&9Treasure> &7Set chest point 4 to your target block!"
+		else if argument 1 is "chestPointSub":
+			if argument 2 is set:
+				if arg 3 is not set:
+					send "&9Treasure> &7Define a sub chest! (1/2/3/4/5/6/7/8)"
+				else:
+					if arg 2 is "1":
+						if arg 3 is "1":
+							set {mineplex.chestpoint.1.sub.1} to target block
+							send "&9Treasure> &7Set chest point 1's sub 1 to your target block!"
+						else if arg 3 is "2":
+							set {mineplex.chestpoint.1.sub.2} to target block
+							send "&9Treasure> &7Set chest point 1's sub 2 to your target block!"
+						else if arg 3 is "3":
+							set {mineplex.chestpoint.1.sub.3} to target block
+							send "&9Treasure> &7Set chest point 1's sub 3 to your target block!"
+						else if arg 3 is "4":
+							set {mineplex.chestpoint.1.sub.4} to target block
+							send "&9Treasure> &7Set chest point 1's sub 4 to your target block!"
+						else if arg 3 is "5":
+							set {mineplex.chestpoint.1.sub.5} to target block
+							send "&9Treasure> &7Set chest point 1's sub 5 to your target block!"
+						else if arg 3 is "6":
+							set {mineplex.chestpoint.1.sub.6} to target block
+							send "&9Treasure> &7Set chest point 1's sub 6 to your target block!"
+						else if arg 3 is "7":
+							set {mineplex.chestpoint.1.sub.7} to target block
+							send "&9Treasure> &7Set chest point 1's sub 7 to your target block!"
+						else if arg 3 is "8":
+							set {mineplex.chestpoint.1.sub.8} to target block
+							send "&9Treasure> &7Set chest point 1's sub 8 to your target block!"
+					else if arg 2 is "2":
+						if arg 3 is "1":
+							set {mineplex.chestpoint.2.sub.1} to target block
+							send "&9Treasure> &7Set chest point 2's sub 1 to your target block!"
+						else if arg 3 is "2":
+							set {mineplex.chestpoint.2.sub.2} to target block
+							send "&9Treasure> &7Set chest point 2's sub 2 to your target block!"
+						else if arg 3 is "3":
+							set {mineplex.chestpoint.2.sub.3} to target block
+							send "&9Treasure> &7Set chest point 2's sub 3 to your target block!"
+						else if arg 3 is "4":
+							set {mineplex.chestpoint.2.sub.4} to target block
+							send "&9Treasure> &7Set chest point 2's sub 4 to your target block!"
+						else if arg 3 is "5":
+							set {mineplex.chestpoint.2.sub.5} to target block
+							send "&9Treasure> &7Set chest point 2's sub 5 to your target block!"
+						else if arg 3 is "6":
+							set {mineplex.chestpoint.2.sub.6} to target block
+							send "&9Treasure> &7Set chest point 2's sub 6 to your target block!"
+						else if arg 3 is "7":
+							set {mineplex.chestpoint.2.sub.7} to target block
+							send "&9Treasure> &7Set chest point 2's sub 7 to your target block!"
+						else if arg 3 is "8":
+							set {mineplex.chestpoint.2.sub.8} to target block
+							send "&9Treasure> &7Set chest point 2's sub 8 to your target block!"
+					else if arg 2 is "3":
+						if arg 3 is "1":
+							set {mineplex.chestpoint.3.sub.1} to target block
+							send "&9Treasure> &7Set chest point 3's sub 1 to your target block!"
+						else if arg 3 is "2":
+							set {mineplex.chestpoint.3.sub.2} to target block
+							send "&9Treasure> &7Set chest point 3's sub 2 to your target block!"
+						else if arg 3 is "3":
+							set {mineplex.chestpoint.3.sub.3} to target block
+							send "&9Treasure> &7Set chest point 3's sub 3 to your target block!"
+						else if arg 3 is "4":
+							set {mineplex.chestpoint.3.sub.4} to target block
+							send "&9Treasure> &7Set chest point 3's sub 4 to your target block!"
+						else if arg 3 is "5":
+							set {mineplex.chestpoint.3.sub.5} to target block
+							send "&9Treasure> &7Set chest point 3's sub 5 to your target block!"
+						else if arg 3 is "6":
+							set {mineplex.chestpoint.3.sub.6} to target block
+							send "&9Treasure> &7Set chest point 3's sub 6 to your target block!"
+						else if arg 3 is "7":
+							set {mineplex.chestpoint.3.sub.7} to target block
+							send "&9Treasure> &7Set chest point 3's sub 7 to your target block!"
+						else if arg 3 is "8":
+							set {mineplex.chestpoint.3.sub.8} to target block
+							send "&9Treasure> &7Set chest point 3's sub 8 to your target block!"
+					else if arg 2 is "4":
+						if arg 3 is "1":
+							set {mineplex.chestpoint.4.sub.1} to target block
+							send "&9Treasure> &7Set chest point 4's sub 1 to your target block!"
+						else if arg 3 is "2":
+							set {mineplex.chestpoint.4.sub.2} to target block
+							send "&9Treasure> &7Set chest point 4's sub 2 to your target block!"
+						else if arg 3 is "3":
+							set {mineplex.chestpoint.4.sub.3} to target block
+							send "&9Treasure> &7Set chest point 4's sub 3 to your target block!"
+						else if arg 3 is "4":
+							set {mineplex.chestpoint.4.sub.4} to target block
+							send "&9Treasure> &7Set chest point 4's sub 4 to your target block!"
+						else if arg 3 is "5":
+							set {mineplex.chestpoint.4.sub.5} to target block
+							send "&9Treasure> &7Set chest point 4's sub 5 to your target block!"
+						else if arg 3 is "6":
+							set {mineplex.chestpoint.4.sub.6} to target block
+							send "&9Treasure> &7Set chest point 4's sub 6 to your target block!"
+						else if arg 3 is "7":
+							set {mineplex.chestpoint.4.sub.7} to target block
+							send "&9Treasure> &7Set chest point 4's sub 7 to your target block!"
+						else if arg 3 is "8":
+							set {mineplex.chestpoint.4.sub.8} to target block
+							send "&9Treasure> &7Set chest point 4's sub 8 to your target block!"
+		else if arg 1 is "spawnCarl":
+			spawn 1 creeper at location of player
+			set {carl} to spawned creeper
+			set name of last spawned entity to "&a&lCarl the Creeper"
+			add "{NoAI:1}" to nbt of {carl}
+			add "{powered:1}" to nbt of {carl}
+			apply slowness 255 to last spawned entity for 999 days
+			set {kitnpc} to location of player
+			send "&9Carl> &7Carl is now apon you!"
+
+command /recompile [<string>]:
+	permission: op
+	permission message: &9Permissions> &7This requires Permission Rank [&9OP&7].
+	trigger:
+		if arg 1 is not set:
+			player command "/sk reload Mineplex"
+		else:
+			if arg 1 is "-s":
+				execute console command "/sk reload Mineplex"
+
+command /rules:
+	trigger:
+		send "&9Rules> &7The rules can be found here: &a%{mineplex.config.ruleswebsite}%"
+
+#CarlBae
+
+on join:
+	set {_player} to "%player%"
+	replace all "s" in {_player} with "sssss"
+	message "&2&lCarl the Creeper> &aHello, %{_player}%, Come and ssssseee me, I have sssome amazing rewardsss for you!"
+
+command /carlgui:
+	trigger:
+		open chest with 5 rows named "%player%'s Bonuses" to player
+		wait 2 ticks
+		format slot 11 of player with redstone block named "&cRank Monthly Bonus" with lore "||&7Players with a Rank get a Monthly Bonus!||&bUltra recieves absolutely nothing||&dHero recieves absolutely nothing||&aLegend recieves absolutely nothing||&cTitan recieves absolutely nothing||&fPurchase a Rank at;||&f%{mineplex.config.shoplink}%" to close then run [do [execute player command "/carlgui"]->[message "claim" to console]]
+		format slot 13 of player with chest named "&cDaily Reward" with lore "||&fNext reward is soon||&7||&eRewards||  &f100 Treasure Shards||  &f100 Gems||&f250 Experience||&7||&eCurrent Streak: 0||&eStreak Bonus: 5||&7||&eHighest Streak: &f1||&eStreak Reset: &f1.3 Days" to close then run [do [execute player command "/dailyr"]->[message "claim" to console]]
+		format slot 15 of player with redstone block named "&cVote on Poll" with lore "||&fYou voted on all of the polls!" to close then run [do [execute player command "/carlgui"]->[message "claim" to console]]
+		format slot 19 of player with water bucket named "&e&lVisit us on Facebook" with lore "||&fWe don't have a facebook!" to close then run [do [execute player command "/carlgui"]->[message "claim" to console]]
+		format slot 21 of player with redstone block named "&c&lPower Play Club" with lore "&eFebruary's Cosmetic||  &fTrue Love Pet||&b &f||&eOther Rewards||  &f2 Game Amplifier||  &f1 Omega Chest||&b||&cGet Power Play Club months at||&b%{mineplex.config.shoplink}%" to close then run [do [execute player command "/carlgui"]->[message "claim" to console]]
+		format slot 23 of player with creeper head named "&c&lCarl's Spinner" with lore "||&fYou need a Carl Spin Ticket to Spin||&b||&eYour Tickets: coded in the next version" to close then run [do [execute player command "/carlgui"]->[message "claim" to console]]
+		format slot 25 of player with redstone block named "&c&lThank Rewards" with lore "||&7Earn Thank Rewards from players using /thank||&7on you, or by enabling Game Amplifiers.||&b||&fGet Amplifiers at &a%{mineplex.config.shoplink}%" to close then run [do [execute player command "/carlgui"]->[message "claim" to console]]
+		format slot 29 of player with apple named "&a&lVisit us on YouTube" with lore "&eClaim your Daily 250 Shard Reward||&fby checking out the latest Video ||&fon the %{mineplex.config.servername}% Channel!||&b||&fBe sure and Subscribe so you ||&fdon't miss a video!||&b||&aClick to visit us on YouTube!" to close then run [do [execute player command "/ytlink"]->[message "claim" to console]]
+		format slot 33 of player with apple named "&a&lVisit us on Twitter" with lore "&fCheck out and follow Mineplex on||&fTwitter for Giveaways, Announcements,||&fTeasers, and Tips!||&b||&aClick to visit us on Twitter" to close then run [do [execute player command "/tlink"]->[message "claim" to console]]
+
+every second:
+	loop all entities:
+		name of loop-entity contains "&a&lCarl the Creeper"
+		teleport loop-entity to {kitnpc}
+
+on damage:
+	name of victim contains "&a&lCarl the Creeper"
+	cancel event
+
+on right click on entity:
+	name of clicked entity contains "&a&lCarl the Creeper"
+	if {nospam.%player%} is true:
+		send "&6Please dont spam the npc" to player
+	else:
+		set {nospam.%player%} to true
+		make player execute command "/carlgui"
+		wait 1 second
+		set {nospam.%player%} to false
+
+on death:
+	set {nospam.%victim%} to false
+
+on join:
+	set {nospam.%player%} to false
+
+command /dailyr:
+	trigger:
+		set {_t} to difference between {carl.dr.%player%} and now
+		set {_tc} to "1 day" parsed as a timespan
+		if {_t} is less than {_tc}:
+			message "&9Carl> &7Come back in another 24 hours."
+			stop
+		else:
+			message "&9Carl> &7Rewarded &a100 Treasure Shards&7."
+			message "&9Carl> &7Rewarded &a100 Gems&7."
+			message "&9Carl> &7Rewarded &a250 Experience&7."
+			set {carl.dr.%player%} to now
+			make console execute command "/shard %player% 100"
+			make console execute command "/gem %player% 100"
+
+command /ytlink:
+	trigger:
+		message "&6&m====================================="
+		message "&b &f"
+		message "          &f&lClick to Open in Web Browser"
+		message "          &a%{mineplex.config.youtube}%"
+		message "&b &f"
+		message "&6&m====================================="
+
+command /tlink:
+	trigger:
+		message "&6&m====================================="
+		message "&b &f"
+		message "          &f&lClick to Open in Web Browser"
+		message "          &a%{mineplex.config.twitter}%"
+		message "&b &f"
+		message "&6&m====================================="
+
+#Treasure System
+
+on quit:
+	if {mineplex.inchest.%player%} is set:
+		delete {mineplex.inchest.%player%}
+		execute console command "/resetpoints %{mineplex.inchest.%player%}%"
+
+function rewardTreasure(p: player , c: number , l: number, s: number) :: number:
+	set {_mineplex.chestpoint.%{_l}%.sub.%{_s}%} to {mineplex.chestpoint.%{_l}%.sub.%{_s}%}
+	add 0 to y-coordinate of {_mineplex.chestpoint.%{_l}%.sub.%{_s}%} 
+	if {_c} is 1:
+		set {_r} to a random integer between 1 and 4
+		if {_r} is 1:
+			set {_ra} to a random integer between 100 and 1000
+			delete {mineplex.inchest.%{_p}%}
+			send "&9Treasure> &e%{_p}% &7found Common %{_ra}% Shards." to {_p}
+			add {_ra} to {mineplex.shards.%{_p}%}
+			launch "BALL" firework at {_mineplex.chestpoint.%{_l}%.sub.%{_s}%} timed 0 colored white
+			wait 1 second
+			execute console command "/resetpoints %{_l}%"
+			delete {mineplex.inchest.%{_p}%}
+		if {_r} is 2:
+			set {_ra} to a random integer between 1001 and 3456
+			delete {mineplex.inchest.%{_p}%}
+			send "&9Treasure> &e%{_p}% &7found &bUltra %{_ra}% Shards&7." to {_p}
+			launch "BALL" firework at {_mineplex.chestpoint.%{_l}%.sub.%{_s}%} timed 0 colored light blue
+			add {_ra} to {mineplex.shards.%{_p}%}
+			wait 1 second
+			execute console command "/resetpoints %{_l}%"
+			delete {mineplex.inchest.%{_p}%}
+		if {_r} is 3:
+			set {_ra} to a random integer between 3457 and 5230
+			delete {mineplex.inchest.%{_p}%}
+			broadcast "&9Treasure> &e%{_p}% &7found &dRare %{_ra}% Shards&7."
+			launch "BALL" firework at {_mineplex.chestpoint.%{_l}%.sub.%{_s}%} timed 0 colored magenta
+			add {_ra} to {mineplex.shards.%{_p}%}
+			delete {mineplex.inchest.%{_p}%}
+			wait 1 second
+			execute console command "/resetpoints %{_l}%"
+			delete {mineplex.inchest.%{_p}%}
+		if {_r} is 4:
+			set {_ra} to a random integer between 5231 and 5456
+			delete {mineplex.inchest.%{_p}%}
+			broadcast "&9Treasure> &e%{_p}% &7found &aLegendary %{_ra}% Shards&7."
+			play raw sound "mob.enderdragon.end" at {_p} with pitch 10 volume 100
+			launch "BALL" firework at {_mineplex.chestpoint.%{_l}%.sub.%{_s}%} timed 0 colored "light green", "green", "light green", "green", "light green", "green", "light green", "green", "light green", "green" and "light green"
+			add {_ra} to {mineplex.shards.%{_p}%}
+			delete {mineplex.inchest.%{_p}%}
+			wait 1 second
+			execute console command "/resetpoints %{_l}%"
+	if {_c} is 2:
+		set {_r} to a random integer between 1 and 4
+		if {_r} is 1:
+			delete {mineplex.inchest.%{_p}%}
+			set {_ra} to a random integer between 3457 and 5230
+			send "&9Treasure> &e%{_p}% &7found Common %{_ra}% Shards." to {_p}
+			launch "BALL" firework at {_mineplex.chestpoint.%{_l}%.sub.%{_s}%} timed 0 colored white
+			add {_ra} to {mineplex.shards.%{_p}%}
+			wait 1 second
+			execute console command "/resetpoints %{_l}%"
+			delete {mineplex.inchest.%{_p}%}
+		if {_r} is 2:
+			set {_ra} to a random integer between 5231 and 5456
+			delete {mineplex.inchest.%{_p}%}
+			send "&9Treasure> &e%{_p}% &7found &bUltra %{_ra}% Shards&7." to {_p}
+			launch "BALL" firework at {_mineplex.chestpoint.%{_l}%.sub.%{_s}%} timed 0 colored light blue
+			add {_ra} to {mineplex.shards.%{_p}%}
+			wait 1 second
+			execute console command "/resetpoints %{_l}%"
+			delete {mineplex.inchest.%{_p}%}
+		if {_r} is 3:
+			set {_ra} to a random integer between 5457 and 9456
+			delete {mineplex.inchest.%{_p}%}
+			broadcast "&9Treasure> &e%{_p}% &7found &dRare %{_ra}% Shards&7."
+			launch "BALL" firework at {_mineplex.chestpoint.%{_l}%.sub.%{_s}%} timed 0 colored magenta
+			add {_ra} to {mineplex.shards.%{_p}%}
+			wait 1 second
+			execute console command "/resetpoints %{_l}%"
+			delete {mineplex.inchest.%{_p}%}
+		if {_r} is 4:
+			set {_ra} to a random integer between 9457 and 11231
+			delete {mineplex.inchest.%{_p}%}
+			broadcast "&9Treasure> &e%{_p}% &7found &aLegendary %{_ra}% Shards&7."
+			launch "BALL" firework at {_mineplex.chestpoint.%{_l}%.sub.%{_s}%} timed 0 colored "light green", "green", "light green", "green", "light green", "green", "light green", "green", "light green", "green" and "light green"
+			play raw sound "mob.enderdragon.end" at {_p} with pitch 10 volume 100
+			add {_ra} to {mineplex.shards.%{_p}%}
+			wait 1 second
+			execute console command "/resetpoints %{_l}%"
+			delete {mineplex.inchest.%{_p}%}
+	if {_c} is 3:
+		set {_r} to a random integer between 1 and 4
+		if {_r} is 1:
+			delete {mineplex.inchest.%{_p}%}
+			set {_ra} to a random integer between 11231 and 15755
+			broadcast "&9Treasure> &e%{_p}% &7found &bUltra %{_ra}% Shards."
+			launch "BALL" firework at {_mineplex.chestpoint.%{_l}%.sub.%{_s}%} timed 0 colored light blue
+			add {_ra} to {mineplex.shards.%{_p}%}
+			wait 1 second
+			execute console command "/resetpoints %{_l}%"
+			delete {mineplex.inchest.%{_p}%}
+		if {_r} is 2:
+			set {_ra} to a random integer between 15755 and 19174
+			delete {mineplex.inchest.%{_p}%}
+			broadcast "&9Treasure> &e%{_p}% &7found &dRare %{_ra}% Shards&7."
+			launch "BALL" firework at {_mineplex.chestpoint.%{_l}%.sub.%{_s}%} timed 0 colored magenta
+			add {_ra} to {mineplex.shards.%{_p}%}
+			wait 1 second
+			execute console command "/resetpoints %{_l}%"
+			delete {mineplex.inchest.%{_p}%}
+		if {_r} is 3:
+			if {mineplex.rank.%{_p}%} is "":
+				set {_ra} to "Ultra"
+			else if {mineplex.rank.%{_p}%} is "&b&lULTRA ":
+				set {_ra} to "Hero"
+			else if {mineplex.rank.%{_p}%} is "&d&lHERO ":
+				set {_ra} to "Legend"
+			else if {mineplex.rank.%{_p}%} is "&a&lLEGEND ":
+				set {_ra} to "Titan"
+			else if {mineplex.rank.%{_p}%} is "&c&lTITAN ":
+				set {_ra} to "Eternal"
+			else if {mineplex.rank.%{_p}%} is "&3&lETERNAL ":
+				set {_ra} to "Eternal"
+			else:
+				execute console command "/resetpoints %{_l}%"
+				delete {mineplex.inchest.%{_p}%}
+				set {_ra} to a random integer between 19174 and 20448
+				send "&9Treasure> &7You would have gotton a rank upgrade but like your staff :P" to {_p}
+				broadcast "&9Treasure> &e%{_p}% &7found &aLegendary %{_ra}% Shards&7."
+				launch "BALL" firework at {_mineplex.chestpoint.%{_l}%.sub.%{_s}%} timed 0 colored "light green", "green", "light green", "green", "light green", "green", "light green", "green", "light green", "green" and "light green"
+				play raw sound "mob.enderdragon.end" at {_p} with pitch 10 volume 100
+				add {_ra} to {mineplex.shards.%{_p}%}
+				stop
+			execute console command "/updaterank %{_p}% %{_ra}%"
+			delete {mineplex.inchest.%{_p}%}
+			broadcast "&9Treasure> &e%{_p}% &7found &cMythical %{_ra}% Rank&7."
+			launch "BALL" firework at {_mineplex.chestpoint.%{_l}%.sub.%{_s}%} timed 0 colored "light red", "red", "light red", "red", "light red", "green", "light red", "red", "light red", "red" and "light red"
+			play raw sound "mob.wither.death" at {_p} with pitch 2 volume 100
+			wait 1 second
+			execute console command "/resetpoints %{_l}%"
+			delete {mineplex.inchest.%{_p}%}
+		if {_r} is 4:
+			set {_ra} to a random integer between 19174 and 20448
+			delete {mineplex.inchest.%{_p}%}
+			broadcast "&9Treasure> &e%{_p}% &7found &aLegendary %{_ra}% Shards&7."
+			launch "BALL" firework at {_mineplex.chestpoint.%{_l}%.sub.%{_s}%} timed 0 colored "light green", "green", "light green", "green", "light green", "green", "light green", "green", "light green", "green" and "light green"
+			play raw sound "mob.enderdragon.end" at {_p} with pitch 10 volume 100
+			add {_ra} to {mineplex.shards.%{_p}%}
+			wait 1 second
+			execute console command "/resetpoints %{_l}%"
+			delete {mineplex.inchest.%{_p}%}
+
+function openTreasure(p: player , c: number , l: number) :: number:
+	if  {_c} is 1:
+		if {mineplex.shards.%{_p}%} < 1000:
+			wait 0.3 seconds
+			open chest with 6 rows named "            Confirmation" to {_p}
+			wait 1 tick
+			set {_slot} to 0
+			loop 54 times:
+				set slot {_slot} of {_p}'s current inventory to redstone block named "&c&nERROR" with lore "&cYour account has insufficient funds."
+				add 1 to {_slot}
+			wait 2 seconds
+			if inventory name of {_p}'s current inventory is "            Confirmation":
+				close {_p}'s inventory
+			stop
+		remove 1000 from {mineplex.shards.%{_p}%}
+		broadcast "&9Treasure> &e%{_p}% &7is opening a &aOld Treasure"
+		set {mineplex.inchest.%{_p}%} to {_c}
+		set block at {mineplex.chestpoint.%{_l}%} to air
+		teleport {_p} to {mineplex.chestpoint.%{_l}%}
+		send "&9Treasure> &7Choose 4 Chests to Open" to {_p}
+		set block at {mineplex.chestpoint.%{_l}%.sub.1} to chest
+		wait 1 second
+		set block at {mineplex.chestpoint.%{_l}%.sub.2} to chest
+		wait 1 second
+		set block at {mineplex.chestpoint.%{_l}%.sub.3} to chest
+		wait 1 second
+		set block at {mineplex.chestpoint.%{_l}%.sub.4} to chest
+		wait 1 second
+		set block at {mineplex.chestpoint.%{_l}%.sub.5} to chest
+		wait 1 second
+		set block at {mineplex.chestpoint.%{_l}%.sub.6} to chest
+		wait 1 second
+		set block at {mineplex.chestpoint.%{_l}%.sub.7} to chest
+		wait 1 second
+		set block at {mineplex.chestpoint.%{_l}%.sub.8} to chest
+	if  {_c} is 2:
+		if {mineplex.shards.%{_p}%} < 5000:
+			wait 0.3 seconds
+			open chest with 6 rows named "            Confirmation" to {_p}
+			wait 1 tick
+			set {_slot} to 0
+			loop 54 times:
+				set slot {_slot} of {_p}'s current inventory to redstone block named "&c&nERROR" with lore "&cYour account has insufficient funds."
+				add 1 to {_slot}
+			wait 2 seconds
+			if inventory name of {_p}'s current inventory is "            Confirmation":
+				close {_p}'s inventory
+			stop
+		remove 1000 from {mineplex.shards.%{_p}%}
+		broadcast "&9Treasure> &e%{_p}% &7is opening a &6Ancient Treasure"
+		set {mineplex.inchest.%{_p}%} to {_c}
+		set block at {mineplex.chestpoint.%{_l}%} to air
+		teleport {_p} to {mineplex.chestpoint.%{_l}%}
+		send "&9Treasure> &7Choose 4 Chests to Open" to {_p}
+		set block at {mineplex.chestpoint.%{_l}%.sub.1} to chest
+		wait 1 second
+		set block at {mineplex.chestpoint.%{_l}%.sub.2} to chest
+		wait 1 second
+		set block at {mineplex.chestpoint.%{_l}%.sub.3} to chest
+		wait 1 second
+		set block at {mineplex.chestpoint.%{_l}%.sub.4} to chest
+		wait 1 second
+		set block at {mineplex.chestpoint.%{_l}%.sub.5} to chest
+		wait 1 second
+		set block at {mineplex.chestpoint.%{_l}%.sub.6} to chest
+		wait 1 second
+		set block at {mineplex.chestpoint.%{_l}%.sub.7} to chest
+		wait 1 second
+		set block at {mineplex.chestpoint.%{_l}%.sub.8} to chest
+	if  {_c} is 3:
+		if {mineplex.shards.%{_p}%} < 10000:
+			wait 0.3 seconds
+			open chest with 6 rows named "            Confirmation" to {_p}
+			wait 1 tick
+			set {_slot} to 0
+			loop 54 times:
+				set slot {_slot} of {_p}'s current inventory to redstone block named "&c&nERROR" with lore "&cYour account has insufficient funds."
+				add 1 to {_slot}
+			wait 2 seconds
+			if inventory name of {_p}'s current inventory is "            Confirmation":
+				close {_p}'s inventory
+			stop
+		remove 1000 from {mineplex.shards.%{_p}%}
+		broadcast "&9Treasure> &e%{_p}% &7is opening a &cMythical Treasure"
+		set {mineplex.inchest.%{_p}%} to {_c}
+		set block at {mineplex.chestpoint.%{_l}%} to air
+		teleport {_p} to {mineplex.chestpoint.%{_l}%}
+		send "&9Treasure> &7Choose 4 Chests to Open" to {_p}
+		set block at {mineplex.chestpoint.%{_l}%.sub.1} to chest
+		wait 1 second
+		set block at {mineplex.chestpoint.%{_l}%.sub.2} to chest
+		wait 1 second
+		set block at {mineplex.chestpoint.%{_l}%.sub.3} to chest
+		wait 1 second
+		set block at {mineplex.chestpoint.%{_l}%.sub.4} to chest
+		wait 1 second
+		set block at {mineplex.chestpoint.%{_l}%.sub.5} to chest
+		wait 1 second
+		set block at {mineplex.chestpoint.%{_l}%.sub.6} to chest
+		wait 1 second
+		set block at {mineplex.chestpoint.%{_l}%.sub.7} to chest
+		wait 1 second
+		set block at {mineplex.chestpoint.%{_l}%.sub.8} to chest
+
+on inventory click:
+	if inventory name of player's current inventory is "            Confirmation":
+		cancel event
+		close player's inventory
+
+on right click on chest:
+	if event-block is {mineplex.chestpoint.1}:
+		cancel event
+		open chest with 1 row named "Open Treasure" to player
+		wait 2 ticks
+		format slot 2 of player with chest named "&a&lOld Chest" with lore " ||&fOld Chests Owned: &e0 ||&7We've scoured the lands of Minecraft||&7and found these abandoned chests.||&7The contents are unknown, but||&7according to the inscriptions on the||&7straps they appear to contain||&7many kinds of loot.|| ||&fClick to Purchase for &b1000 Treasure Shards|| ||&for Purchase at: &e%{mineplex.config.website}%" to close then run [openTreasure(player, 1, 1)]
+		format slot 4 of player with trapped chest named "&6&lAncient Chest" with lore " ||&fAncient Chests Owned: &e0 ||&7Some of our bravest adventurers||&7have discovered these chests within||&7temples hidden in Minecrafts worlds.|| ||&fClick to Purchase for &b5000 Treasure Shards|| ||&for Purchase at: &e%{mineplex.config.website}%" to close then run [openTreasure(player, 2, 1)]
+		format slot 6 of player with ender chest named "&c&lMythical Chest" with lore " ||&fMythical Chests Owned: &e0 ||&7All our previous adventurers have||&7perished in search of these chests.||&7However, legends of thier existence||&7convinced Sterling, Chiss, and Defek7||&7to venture out and discover the||&7location of these chests on thier own.|| ||&fClick to Purchase for &b10000 Treasure Shards|| ||&for Purchase at: &e%{mineplex.config.website}%" to close then run [openTreasure(player, 3, 1)]
+	else if event-block is {mineplex.chestpoint.2}:
+		cancel event
+		open chest with 1 row named "Open Treasure" to player
+		wait 2 ticks
+		format slot 2 of player with chest named "&a&lOld Chest" with lore " ||&fOld Chests Owned: &e0 ||&7We've scoured the lands of Minecraft||&7and found these abandoned chests.||&7The contents are unknown, but||&7according to the inscriptions on the||&7straps they appear to contain||&7many kinds of loot.|| ||&fClick to Purchase for &b1000 Treasure Shards|| ||&for Purchase at: &e%{mineplex.config.website}%" to close then run [openTreasure(player, 1, 2)]
+		format slot 4 of player with trapped chest named "&6&lAncient Chest" with lore " ||&fAncient Chests Owned: &e0 ||&7Some of our bravest adventurers||&7have discovered these chests within||&7temples hidden in Minecrafts worlds.|| ||&fClick to Purchase for &b5000 Treasure Shards|| ||&for Purchase at: &e%{mineplex.config.website}%" to close then run [openTreasure(player, 2, 2)]
+		format slot 6 of player with ender chest named "&c&lMythical Chest" with lore " ||&fMythical Chests Owned: &e0 ||&7All our previous adventurers have||&7perished in search of these chests.||&7However, legends of thier existence||&7convinced Sterling, Chiss, and Defek7||&7to venture out and discover the||&7location of these chests on thier own.|| ||&fClick to Purchase for &b10000 Treasure Shards|| ||&for Purchase at: &e%{mineplex.config.website}%" to close then run [openTreasure(player, 3, 2)]
+	else if event-block is {mineplex.chestpoint.3}:
+		cancel event
+		open chest with 1 row named "Open Treasure" to player
+		wait 2 ticks
+		format slot 2 of player with chest named "&a&lOld Chest" with lore " ||&fOld Chests Owned: &e0 ||&7We've scoured the lands of Minecraft||&7and found these abandoned chests.||&7The contents are unknown, but||&7according to the inscriptions on the||&7straps they appear to contain||&7many kinds of loot.|| ||&fClick to Purchase for &b1000 Treasure Shards|| ||&for Purchase at: &e%{mineplex.config.website}%" to close then run [openTreasure(player, 1, 3)]
+		format slot 4 of player with trapped chest named "&6&lAncient Chest" with lore " ||&fAncient Chests Owned: &e0 ||&7Some of our bravest adventurers||&7have discovered these chests within||&7temples hidden in Minecrafts worlds.|| ||&fClick to Purchase for &b5000 Treasure Shards|| ||&for Purchase at: &e%{mineplex.config.website}%" to close then run [openTreasure(player, 2, 3)]
+		format slot 6 of player with ender chest named "&c&lMythical Chest" with lore " ||&fMythical Chests Owned: &e0 ||&7All our previous adventurers have||&7perished in search of these chests.||&7However, legends of thier existence||&7convinced Sterling, Chiss, and Defek7||&7to venture out and discover the||&7location of these chests on thier own.|| ||&fClick to Purchase for &b10000 Treasure Shards|| ||&for Purchase at: &e%{mineplex.config.website}%" to close then run [openTreasure(player, 3, 3)]
+	else if event-block is {mineplex.chestpoint.4}:
+		cancel event
+		open chest with 1 row named "Open Treasure" to player
+		wait 2 ticks
+		format slot 2 of player with chest named "&a&lOld Chest" with lore " ||&fOld Chests Owned: &e0 ||&7We've scoured the lands of Minecraft||&7and found these abandoned chests.||&7The contents are unknown, but||&7according to the inscriptions on the||&7straps they appear to contain||&7many kinds of loot.|| ||&fClick to Purchase for &b1000 Treasure Shards|| ||&for Purchase at: &e%{mineplex.config.website}%" to close then run [openTreasure(player, 1, 4)]
+		format slot 4 of player with trapped chest named "&6&lAncient Chest" with lore " ||&fAncient Chests Owned: &e0 ||&7Some of our bravest adventurers||&7have discovered these chests within||&7temples hidden in Minecrafts worlds.|| ||&fClick to Purchase for &b5000 Treasure Shards|| ||&for Purchase at: &e%{mineplex.config.website}%" to close then run [openTreasure(player, 2, 4)]
+		format slot 6 of player with ender chest named "&c&lMythical Chest" with lore " ||&fMythical Chests Owned: &e0 ||&7All our previous adventurers have||&7perished in search of these chests.||&7However, legends of thier existence||&7convinced Sterling, Chiss, and Defek7||&7to venture out and discover the||&7location of these chests on thier own.|| ||&fClick to Purchase for &b10000 Treasure Shards|| ||&for Purchase at: &e%{mineplex.config.website}%" to close then run [openTreasure(player, 3, 4)]
+
+command /resetpoints <number>:
+	trigger:
+		set {_l} to arg 1
+		set block at {mineplex.chestpoint.%{_l}%.sub.1} to air
+		wait 1 second
+		set block at {mineplex.chestpoint.%{_l}%.sub.2} to air
+		wait 1 second
+		set block at {mineplex.chestpoint.%{_l}%.sub.3} to air
+		wait 1 second
+		set block at {mineplex.chestpoint.%{_l}%.sub.4} to air
+		wait 1 second
+		set block at {mineplex.chestpoint.%{_l}%.sub.5} to air
+		wait 1 second
+		set block at {mineplex.chestpoint.%{_l}%.sub.6} to air
+		wait 1 second
+		set block at {mineplex.chestpoint.%{_l}%.sub.7} to air
+		wait 1 second
+		set block at {mineplex.chestpoint.%{_l}%.sub.8} to air
+		set block at {mineplex.chestpoint.%{_l}%} to chest
+
+on right click on chest:
+	if event-block is {mineplex.chestpoint.1.sub.1}:
+		if {mineplex.inchest.%player%} is set:
+			cancel event
+			make the event-block appear open 
+			rewardTreasure(player, {mineplex.inchest.%player%}, 1, 1)
+		else:
+			cancel event
+	else if event-block is {mineplex.chestpoint.1.sub.2}:
+		if {mineplex.inchest.%player%} is set:
+			cancel event
+			make the event-block appear open 
+			rewardTreasure(player, {mineplex.inchest.%player%}, 1, 2)
+		else:
+			cancel event
+	else if event-block is {mineplex.chestpoint.1.sub.3}:
+		if {mineplex.inchest.%player%} is set:
+			cancel event
+			make the event-block appear open 
+			rewardTreasure(player, {mineplex.inchest.%player%}, 1, 3)
+		else:
+			cancel event
+	else if event-block is {mineplex.chestpoint.1.sub.4}:
+		if {mineplex.inchest.%player%} is set:
+			cancel event
+			make the event-block appear open 
+			rewardTreasure(player, {mineplex.inchest.%player%}, 1, 4)
+		else:
+			cancel event
+	else if event-block is {mineplex.chestpoint.1.sub.5}:
+		if {mineplex.inchest.%player%} is set:
+			cancel event
+			make the event-block appear open 
+			rewardTreasure(player, {mineplex.inchest.%player%}, 1, 5)
+		else:
+			cancel event
+	else if event-block is {mineplex.chestpoint.1.sub.6}:
+		if {mineplex.inchest.%player%} is set:
+			cancel event
+			make the event-block appear open 
+			rewardTreasure(player, {mineplex.inchest.%player%}, 1, 6)
+		else:
+			cancel event
+	else if event-block is {mineplex.chestpoint.1.sub.7}:
+		if {mineplex.inchest.%player%} is set:
+			cancel event
+			make the event-block appear open 
+			rewardTreasure(player, {mineplex.inchest.%player%}, 1, 7)
+		else:
+			cancel event
+	else if event-block is {mineplex.chestpoint.1.sub.8}:
+		if {mineplex.inchest.%player%} is set:
+			cancel event
+			make the event-block appear open 
+			rewardTreasure(player, {mineplex.inchest.%player%}, 1, 8)
+		else:
+			cancel event
+	else if event-block is {mineplex.chestpoint.2.sub.1}:
+		if {mineplex.inchest.%player%} is set:
+			cancel event
+			make the event-block appear open 
+			rewardTreasure(player, {mineplex.inchest.%player%}, 2, 1)
+		else:
+			cancel event
+	else if event-block is {mineplex.chestpoint.2.sub.2}:
+		if {mineplex.inchest.%player%} is set:
+			cancel event
+			make the event-block appear open 
+			rewardTreasure(player, {mineplex.inchest.%player%}, 2, 2)
+		else:
+			cancel event
+	else if event-block is {mineplex.chestpoint.2.sub.3}:
+		if {mineplex.inchest.%player%} is set:
+			cancel event
+			make the event-block appear open 
+			rewardTreasure(player, {mineplex.inchest.%player%}, 2, 3)
+		else:
+			cancel event
+	else if event-block is {mineplex.chestpoint.2.sub.4}:
+		if {mineplex.inchest.%player%} is set:
+			cancel event
+			make the event-block appear open 
+			rewardTreasure(player, {mineplex.inchest.%player%}, 2, 4)
+		else:
+			cancel event
+	else if event-block is {mineplex.chestpoint.2.sub.5}:
+		if {mineplex.inchest.%player%} is set:
+			cancel event
+			make the event-block appear open 
+			rewardTreasure(player, {mineplex.inchest.%player%}, 2, 5)
+		else:
+			cancel event
+	else if event-block is {mineplex.chestpoint.2.sub.6}:
+		if {mineplex.inchest.%player%} is set:
+			cancel event
+			make the event-block appear open 
+			rewardTreasure(player, {mineplex.inchest.%player%}, 2, 6)
+		else:
+			cancel event
+	else if event-block is {mineplex.chestpoint.2.sub.7}:
+		if {mineplex.inchest.%player%} is set:
+			cancel event
+			make the event-block appear open 
+			rewardTreasure(player, {mineplex.inchest.%player%}, 2, 7)
+		else:
+			cancel event
+	else if event-block is {mineplex.chestpoint.2.sub.8}:
+		if {mineplex.inchest.%player%} is set:
+			cancel event
+			make the event-block appear open 
+			rewardTreasure(player, {mineplex.inchest.%player%}, 2, 8)
+		else:
+			cancel event
+	else if event-block is {mineplex.chestpoint.3.sub.1}:
+		if {mineplex.inchest.%player%} is set:
+			cancel event
+			make the event-block appear open 
+			rewardTreasure(player, {mineplex.inchest.%player%}, 3, 1)
+		else:
+			cancel event
+	else if event-block is {mineplex.chestpoint.3.sub.2}:
+		if {mineplex.inchest.%player%} is set:
+			cancel event
+			make the event-block appear open 
+			rewardTreasure(player, {mineplex.inchest.%player%}, 3, 2)
+		else:
+			cancel event
+	else if event-block is {mineplex.chestpoint.3.sub.3}:
+		if {mineplex.inchest.%player%} is set:
+			cancel event
+			make the event-block appear open
+			rewardTreasure(player, {mineplex.inchest.%player%}, 3, 3)
+		else:
+			cancel event
+	else if event-block is {mineplex.chestpoint.3.sub.4}:
+		if {mineplex.inchest.%player%} is set:
+			cancel event
+			make the event-block appear open
+			rewardTreasure(player, {mineplex.inchest.%player%}, 3, 4)
+		else:
+			cancel event
+	else if event-block is {mineplex.chestpoint.3.sub.5}:
+		if {mineplex.inchest.%player%} is set:
+			cancel event
+			make the event-block appear open 
+			rewardTreasure(player, {mineplex.inchest.%player%}, 3, 5)
+		else:
+			cancel event
+	else if event-block is {mineplex.chestpoint.3.sub.6}:
+		if {mineplex.inchest.%player%} is set:
+			cancel event
+			make the event-block appear open 
+			rewardTreasure(player, {mineplex.inchest.%player%}, 3, 6)
+		else:
+			cancel event
+	else if event-block is {mineplex.chestpoint.3.sub.7}:
+		if {mineplex.inchest.%player%} is set:
+			cancel event
+			make the event-block appear open 
+			rewardTreasure(player, {mineplex.inchest.%player%}, 3, 7)
+		else:
+			cancel event
+	else if event-block is {mineplex.chestpoint.3.sub.8}:
+		if {mineplex.inchest.%player%} is set:
+			cancel event
+			make the event-block appear open 
+			rewardTreasure(player, {mineplex.inchest.%player%}, 3, 8)
+		else:
+			cancel event
+	else if event-block is {mineplex.chestpoint.4.sub.1}:
+		if {mineplex.inchest.%player%} is set:
+			cancel event
+			make the event-block appear open 
+			rewardTreasure(player, {mineplex.inchest.%player%}, 4, 1)
+		else:
+			cancel event
+	else if event-block is {mineplex.chestpoint.4.sub.2}:
+		if {mineplex.inchest.%player%} is set:
+			cancel event
+			make the event-block appear open 
+			rewardTreasure(player, {mineplex.inchest.%player%}, 4, 2)
+		else:
+			cancel event
+	else if event-block is {mineplex.chestpoint.4.sub.3}:
+		if {mineplex.inchest.%player%} is set:
+			cancel event
+			make the event-block appear open 
+			rewardTreasure(player, {mineplex.inchest.%player%}, 4, 3)
+		else:
+			cancel event
+	else if event-block is {mineplex.chestpoint.4.sub.4}:
+		if {mineplex.inchest.%player%} is set:
+			cancel event
+			make the event-block appear open 
+			rewardTreasure(player, {mineplex.inchest.%player%}, 4, 4)
+		else:
+			cancel event
+	else if event-block is {mineplex.chestpoint.4.sub.5}:
+		if {mineplex.inchest.%player%} is set:
+			cancel event
+			make the event-block appear open 
+			rewardTreasure(player, {mineplex.inchest.%player%}, 4, 5)
+		else:
+			cancel event
+	else if event-block is {mineplex.chestpoint.4.sub.6}:
+		if {mineplex.inchest.%player%} is set:
+			cancel event
+			make the event-block appear open 
+			rewardTreasure(player, {mineplex.inchest.%player%}, 4, 6)
+		else:
+			cancel event
+	else if event-block is {mineplex.chestpoint.4.sub.7}:
+		if {mineplex.inchest.%player%} is set:
+			cancel event
+			make the event-block appear open 
+			rewardTreasure(player, {mineplex.inchest.%player%}, 4, 7)
+		else:
+			cancel event
+	else if event-block is {mineplex.chestpoint.4.sub.8}:
+		if {mineplex.inchest.%player%} is set:
+			cancel event
+			make the event-block appear open 
+			rewardTreasure(player, {mineplex.inchest.%player%}, 4, 8)
+		else:
+			cancel event
+	
 
 #Scoreboard
 
@@ -327,6 +1163,12 @@ on join:
 		#set {_var::*} to contents from url "https://raw.githubusercontent.com/WheezyGold7931/Mineplex-Core/master/version.txt" Raw in GitHub does not update fast enough rip lel
 		set {_var::*} to contents from url "http://pastebin.com/raw/LG11nc8b"
 		loop {_var::*}:
+			set {_u} to "%loop-value%" parsed as a number
+			set {_c} to "{@MCRVER}" parsed as a number
+			if {_c} is greater than {_u}:
+				send "&9Mineplex Core> &7You must be using some fancy indev version!" to player
+				send "&9Mineplex Core> &7or your a retard and change the version in the config!" to player
+				stop
 			if loop-value is not "{@MCRVER}":
 				send "&9Mineplex Core> &7Version &e%loop-value% &7is ready for download" to player
 			else:
@@ -344,6 +1186,12 @@ on load:
 	#set {_var::*} to contents from url "https://raw.githubusercontent.com/WheezyGold7931/Mineplex-Core/master/version.txt" Raw in GitHub does not update fast enough rip lel
 	set {_var::*} to contents from url "http://pastebin.com/raw/LG11nc8b"
 	loop {_var::*}:
+		set {_u} to "%loop-value%" parsed as a number
+		set {_c} to "{@MCRVER}" parsed as a number
+		if {_c} is greater than {_u}:
+			broadcast "&9Mineplex Core> &7You must be using some fancy indev version!"
+			broadcast "&9Mineplex Core> &7or your a retard and change the version in the config!"
+			stop
 		if loop-value is not "{@MCRVER}":
 			broadcast "&9Mineplex Core> &7Version &e%loop-value% &7is ready for download"
 		else:
@@ -358,8 +1206,22 @@ on load:
 		broadcast "&9Mineplex Core> &7End of Changelog!"
 	if {mineplex.gadget.enabled} is not set:
 		set {mineplex.gadget.enabled} to true
+	if {mineplex.report.id} is not set:
+		set {mineplex.report.id} to 1
 
 on join:
+	if {mineplex.punish.past.tempban.%player%} is not set:
+		set {mineplex.punish.past.tempban.%player%} to 0
+	if {mineplex.punish.past.permban.%player%} is not set:
+		set {mineplex.punish.past.permban.%player%} to 0
+	if {mineplex.punish.past.tempmute.%player%} is not set:
+		set {mineplex.punish.past.tempmute.%player%} to 0
+	if {mineplex.punish.past.permmute.%player%} is not set:
+		set {mineplex.punish.past.permmute.%player%} to 0
+	if {mineplex.punish.past.warn.%player%} is not set:
+		set {mineplex.punish.past.warn.%player%} to 0
+	if {mineplex.punish.past.reportban.%player%} is not set:
+		set {mineplex.punish.past.reportban.%player%} to 0
 	set join message to "&8Join> &7%player%"
 	updateRankAPI(player)
 	delete {mineplex.disguise.%player%}
@@ -367,6 +1229,7 @@ on join:
 	if {mineplex.level.%player%} is not set:
 		set {mineplex.level.%player%} to "&70"
 	delete {mineplex.lastm.%player%}
+	delete {mineplex.lasta.%player%} 
 	wait 1.5 seconds
 	if {mineplex.rank.%player%} is not set:
 		set {mineplex.rank.%player%} to ""
@@ -391,12 +1254,18 @@ on join:
 		hide all players from player
 	if {mineplex.pref.hpv.%player%} is not set:
 		set {mineplex.pref.hpv.%player%} to true
+	if {mineplex.pref.ff.%player%} is not set:
+		set {mineplex.pref.ff.%player%} to false
+	if {mineplex.ff.%player%} is not set:
+		set {mineplex.ff.%player%} to false
 	if {mineplex.pref.pm.%player%} is not set:
 		set {mineplex.pref.pm.%player%} to true
 	if {mineplex.pref.pc.%player%} is not set:
 		set {mineplex.pref.pc.%player%} to true
 	if {mineplex.pref.gwen.%player%} is not set:
 		set {mineplex.pref.gwen.%player%} to true
+	if {mineplex.pref.report.%player%} is not set:
+		set {mineplex.pref.report.%player%} to true
 	if {mineplex.shards.%player%} is not set:
 		set {mineplex.shards.%player%} to 0
 	if {mineplex.gems.%player%} is not set:
@@ -428,11 +1297,115 @@ on load:
 on quit:
 	set quit message to "&8Quit> &7%player%"
 
+every second:
+	loop all players:
+		add 1 to {mineplex.time.%loop-player%}
+
+#Forcefield
+
+every 2 ticks:
+	loop all players:
+		if {mineplex.ff.list::%loop-player%} is set:
+			loop players in radius 4 of loop-player:
+				if {mineplex.pref.ff.%loop-player-2%} is false:
+					if loop-player-2 is not loop-player-1:
+						play raw sound "mob.chicken.plop" at loop-player-2 with pitch 1 volume 10
+						push the loop-player-2 upwards at speed 0.3
+						push the loop-player-2 backwards at speed 0.45
+						play raw sound "mob.chicken.plop" at loop-player-2 with pitch 1 volume 10
+
 #Mineplex Commands
 
+command /tp [<text>] [<text>] [<text>]:
+	permission: mineplex.mod
+	permission message: &9Permissions> &7This requires Permission Rank [&9MOD&7].
+	trigger:
+		if arg-1 is not set:
+			send "&9Teleport> &7Commands List:"
+			send "&6/tp <target> &7Teleport to Player &6Mod"
+			send "&4/tp here <player> &7Teleports Player to Self &4Admin"
+			send "&4/tp <player> <target> &7Teleports Player to Player &4Admin"
+			send "&4/tp all &7Teleports All to Self &4Owner"
+		else:
+			if arg-2 is not set:
+				if arg-1 is set:
+					if arg-1 is not "all":
+						if arg-1 is not "here":
+							if arg-1 parsed as player is online:
+								teleport player to arg-1 parsed as player's location
+								send "&9Teleport> &7Teleported to &6%arg-1%&7."
+								stop
+							else:
+								send "&9Teleport> &7Locating &e%arg-1%&7..."
+								wait 5 seconds
+								send "&9Teleport> &7Could not locate &e%arg-1%&7."
+								stop
+					if arg-1 is "all":
+						if player has permission "mineplex.owner":
+							teleport all players to player
+							send "&9Teleport> &7You teleported &e%amount of players% Players &7to yourself."
+							broadcast "&9Teleport> &7You teleported to &e%player%&7."
+							stop
+						else:
+							send "&9Permissions> &7This requires Permission Rank [&9OWNER&7]."
+			if arg-1 is "here":
+				if player has permission "mineplex.admin":
+					if arg-3 is not set:
+						if arg-2 is set:
+							if arg-2 parsed as player is online:
+								teleport arg-2 parsed as player to player's location
+								send "&9Teleport> &7%player% teleported you to self." to arg-2 parsed as player
+								send "&9Teleport> &7Teleported %arg-2% to self."
+								stop
+							else:
+								send "&9Teleport> &7Locating &e%arg-2%&7..."
+								wait 5 seconds
+								send "&9Teleport> &7Could not locate &e%arg-2%&7."
+								stop
+				else:
+					send "&9Permissions> &7This requires Permission Rank [&9ADMIN&7]."
+				if arg-2 is not set:
+					send "&9Teleport> &7Commands List:"
+					send "&6/tp <target> &7Teleport to Player &6Mod"
+					send "&6/tp here <player> &7Teleports Player to Self &6Admin"
+					send "&6/tp <player> <target> &7Teleports Player to Player &6Admin"
+					send "&6/tp all &7Teleports All to Self &6Owner"
+			if arg-3 is not set:
+				if arg-2 is set:
+					if player has permission "mineplex.admin":
+						if arg-2 parsed as player is online:
+							if arg-1 parsed as player is online:
+								teleport arg-1 parsed as player to arg-2 parsed as player
+								send "&9Teleport> &7%arg-1% was teleported to you." to arg-2 parsed as player
+								send "&9Teleport> &7You were teleported to %arg-2%." to arg-1 parsed as player
+								stop
+							else:
+								send "&9Teleport> &7Locating &e%arg-1%&7..."
+								wait 5 seconds
+								send "&9Teleport> &7Could not locate &e%arg-1%&7."
+								stop
+						else:
+							send "&9Teleport> &7Locating &e%arg-2%&7..."
+							wait 5 seconds
+							send "&9Teleport> &7Could not locate &e%arg-2%&7."
+							stop
+					else:
+						send "&9Permissions> &7This requires Permission Rank [&9ADMIN&7]."
+
+command /time [<offline player>] [<string>]:
+	permission: mineplex.mod
+	permission message: &9Permissions> &7This requires Permission Rank [&9MOD&7].
+	trigger:
+		if arg 1 is not set:
+			send "&9Time> &7Usage: /time <playerName>"
+		else:
+			if {mineplex.time.%arg-1%} is not set:
+				set {mineplex.time.%arg-1%} to 0
+			send "&9Time> &e%arg-1% &7has spent &e%{mineplex.time.%arg-1%}%.0 Seconds &7in game"
+
 command /disguise [<string>] [<string>]:
-	permission: mineplex.admin
-	permission message: &9Permissions> &7This requires Permmission Rank [&9ADMIN&7].
+	permission: mineplex.youtube
+	permission message: &9Permissions> &7This requires Permission Rank [&9ADMIN&7].
 	trigger:
 		if arg 1 is not set:
 			if {mineplex.disguise.%player%} is set:
@@ -502,7 +1475,7 @@ command /debugapi [<string>] [<string>] [<string>]:
 command /give [<string>] [<string>] [<string>] [<string>]:
 	aliases: /g, /item, /i
 	permission: mineplex.admin
-	permission message: &9Permissions> &7This requires Permmission Rank [&9ADMIN&7].
+	permission message: &9Permissions> &7This requires Permission Rank [&9ADMIN&7].
 	trigger:
 		if arg 1 is not set:
 			send "&9Give: &7Listing Commands:"
@@ -589,14 +1562,6 @@ command /give [<string>] [<string>] [<string>] [<string>]:
 						send "&9Item Search> &e0 &7matches for [&e%arg-2%&7]."
 						send "&9Item(s) Search> &7Invalid [&e%arg-2%&7]."	
 
-command /tpall:
-	permission: mineplex.owner
-	permission message: &9Permissions> &7This requires Permmission Rank [&9OWNER&7].
-	trigger:
-		send "&9Teleport> &7You teleported &e%amount of players% Players &7to yourself."
-		broadcast "&9Teleport> &7You teleported to &e%player%&7."
-		teleport all players to player
-
 command /__mp__st__:
 	trigger:
 		if {mineplex.news.allow} is true:
@@ -610,7 +1575,7 @@ command /__mp__st__:
 
 command /updatelevel [<string>] [<integer>]:
 	permission: mineplex.admin
-	permission message: &9Permissions> &7This requires Permmission Rank [&9ADMIN&7].
+	permission message: &9Permissions> &7This requires Permission Rank [&9ADMIN&7].
 	trigger:
 		if arg 1 is set:
 			if arg 2 is set:
@@ -655,7 +1620,12 @@ command /mcr:
 	trigger:
 		send "&9Plugin> &7Mineplex Core"
 		send "&9Plugin> &7Running MCR: &e{@MCRVER}"
-		send "&9Plugin> &7by WheezyGold7931, LimeGlass, Citrin_, and HappyLuigi"
+		send "&9Plugin> &7by WheezyGold7931, LimeGlass, Citrin_, HappyLuigi, and Dysometrix"
+		send ""
+		send "&9Patreon> &7Huge Thanks to my Patreons:"
+		send "&9Patreon> &eCitrin_"
+		send "&9Patreon> &7If you want to be listed there than support me on Patreon!:"
+		send "&9Patreon> &bhttps://www.patreon.com/WheezyGold7931"
 
 command /a [<text>]:
 	aliases: /admin
@@ -686,17 +1656,38 @@ command /ma [<player>] [<text>]:
 		if player has permission "mineplex.trainee":
 			if argument 1 is set:
 				send "&d<-&6%{_p}% &d%arg-2%" to arg-1
+				set {mineplex.lasta.%player%} to arg-1
 				loop all players:
 					if loop-player has permission "mineplex.trainee":
 						send "%{mineplex.rank.%{_p}%}%%{_p}% &d-> %{mineplex.rank.%arg-1%}%%arg-1% &d%arg-2%" to loop-player
 			else:
 				send "&9Message> &cErr...something went wrong?"
 		else:
-			send "&9Permissions> &7This requires Permmission Rank [&9TRAINEE&7]."
+			send "&9Permissions> &7This requires Permission Rank [&9TRAINEE&7]."
+
+command /ra [<text>]:
+	permission: mineplex.trainee
+	permission message: &9Permissions> &7This requires Permission Rank [&9TRAINEE&7].
+	trigger:
+		if {mineplex.disguise.%player%} is set:
+			set {_p} to {mineplex.disguise.%player%}
+		else:
+			set {_p} to player
+		if {mineplex.lasta.%player%} is not set:
+			send "&9Message> &7You have not messaged anyone recently."
+			stop
+		else:
+			if argument 1 is set:
+				send "&d<-&6%{_p}% &d%arg-1%" to {mineplex.lasta.%player%}
+				loop all players:
+					if loop-player has permission "mineplex.trainee":
+						send "%{mineplex.rank.%{_p}%}%%{_p}% &d-> %{mineplex.rank.%{mineplex.lasta.%player%}%}%%{mineplex.lasta.%player%}% &d%arg-1%" to loop-player
+			else:
+				send "&9Message> &cErr...something went wrong?"
 
 command /vanish:
 	permission: mineplex.trainee
-	permission message: &9Permissions> &7This requires Permmission Rank [&9TRAINEE&7]. 
+	permission message: &9Permissions> &7This requires Permission Rank [&9TRAINEE&7]. 
 	trigger:
 		if {mineplex.vanish.%player%} is true:
 			loop all offline players:
@@ -725,7 +1716,7 @@ command /vanish:
 command /chatslow [<integer>]:
 	aliases: /cs
 	permission: mineplex.srmod
-	permission message: &9Permissions> &7This requires Permmission Rank [&9SR.MOD&7]. 
+	permission message: &9Permissions> &7This requires Permission Rank [&9SR.MOD&7]. 
 	trigger:
 		if {mineplex.disguise.%player%} is set:
 			set {_p} to {mineplex.disguise.%player%}
@@ -758,7 +1749,7 @@ command /chatslow [<integer>]:
 					send "&9Chat> &6%{_p}% &7has set the chat delay to &610 &7seconds." to all players
 command /silence:
 	permission: mineplex.admin
-	permission message: &9Permissions> &7This requires Permmission Rank [&9ADMIN&7].
+	permission message: &9Permissions> &7This requires Permission Rank [&9ADMIN&7].
 	trigger:
 		if {mineplex.chatslow} is set:
 			delete {mineplex.chatslow}
@@ -768,7 +1759,7 @@ command /silence:
 			stop
 		if {mineplex.chatsilence} is set:
 			delete {mineplex.chatsilence}
-			send "&9Chat> &7The chat has been un-silenced." to all players
+			send "&9Chat> &7The chat is not longer silenced." to all players
 		else:
 			set {mineplex.chatsilence} to true
 			send "&9Chat> &7The chat has been silenced for Permanent." to all players
@@ -776,7 +1767,7 @@ command /silence:
 command /locate [<string>]:
 	aliases: /find, /where
 	permission: mineplex.mod
-	permission message: &9Permissions> &7This requires Permmission Rank [&9MOD&7].
+	permission message: &9Permissions> &7This requires Permission Rank [&9MOD&7].
 	trigger:
 		if argument 1 is set:
 			set {_tmp} to arg 1 parsed as an offline player
@@ -788,36 +1779,9 @@ command /locate [<string>]:
 		else:
 			send "&9Locate> &7Player argument missing."
 
-command /tp [<player>] [<player>]:
-	permission: mineplex.mod
-	permission message: &9Permissions> &7This requires Permmission Rank [&9MOD&7].
-	trigger:
-		if argument 1 is set:
-			if argument 2 is set:
-				if player has permission "mineplex.admin":
-					teleport arg-1 to arg-2
-					send "&9Teleport> &7Teleported &6%arg-1% to &6%arg-2%&7."
-				else:
-					send "&9Permissions> &7This requires Permmission Rank [&9ADMIN&7]."
-			else:
-				teleport player to arg-1
-				send "&9Teleport> &7Teleported you to &6%arg-1%&7."
-		else:
-			send "&9Message> &cErr...something went wrong?"
-
-command /tphere [<player>]:
-	permission: mineplex.admin
-	permission message: &9Permissions> &7This requires Permmission Rank [&9ADMIN&7].
-	trigger:
-		if argument 1 is set:
-			teleport arg-1 to player
-			send "&9Teleport> &7Teleported &6%arg-1% &7to you."
-		else:
-			send "&9Message> &cErr...something went wrong?"
-
 command /updaterank [<offline player>] [<string>]:
 	permission: mineplex.admin
-	permission message: &9Permissions> &7This requires Permmission Rank [&9ADMIN&7].
+	permission message: &9Permissions> &7This requires Permission Rank [&9ADMIN&7].
 	trigger:
 		if argument 1 or argument 2 is not set:
 			send "&9Client Manager> &7Listing Rank Update Commands:"
@@ -853,6 +1817,7 @@ command /updaterank [<offline player>] [<string>]:
 				send "&9Client Manager> &7%arg-1%'s rank has been updated to None!"
 				send "&9Client Manager> &7Your rank has been updated to None!" to arg 1
 				set arg-1 tab name to "&e%arg-1%"
+				updateRankAPI(arg-1)
 			else:
 				send "&9Message> &cErr...something went wrong?"
 		else if argument 2 is "ULTRA":
@@ -891,6 +1856,7 @@ command /updaterank [<offline player>] [<string>]:
 				set {mineplex.rank.%arg-1%} to "&c&lTITAN "
 				execute console command "/__mp__dp__ %arg-1%"
 				add "mineplex.legend" to arg-1's permissions
+				add "mineplex.titan" to arg-1's permissions
 				send "&9Client Manager> &7%arg-1%'s rank has been updated to Titan!"
 				send "&9Client Manager> &7Your rank has been updated to Titan!" to arg 1
 				set arg-1 tab name to "&c&lTITAN &e%arg-1%"
@@ -902,6 +1868,7 @@ command /updaterank [<offline player>] [<string>]:
 				set {mineplex.rank.%arg-1%} to "&3&lETERNAL "
 				execute console command "/__mp__dp__ %arg-1%"
 				add "mineplex.legend" to arg-1's permissions
+				add "mineplex.titan" to arg-1's permissions
 				send "&9Client Manager> &7%arg-1%'s rank has been updated to Eternal!"
 				send "&9Client Manager> &7Your rank has been updated to Eternal!" to arg 1
 				set arg-1 tab name to "&3&lETERNAL &e%arg-1%"
@@ -913,6 +1880,8 @@ command /updaterank [<offline player>] [<string>]:
 				set {mineplex.rank.%arg-1%} to "&6&lTRAINEE "
 				execute console command "/__mp__dp__ %arg-1%"
 				add "mineplex.trainee" to arg-1's permissions
+				add "mineplex.legend" to arg-1's permissions
+				add "mineplex.titan" to arg-1's permissions
 				send "&9Client Manager> &7%arg-1%'s rank has been updated to Trainee!"
 				send "&9Client Manager> &7Your rank has been updated to Trainee!" to arg 1
 				set arg-1 tab name to "&6&lTRAINEE &e%arg-1%"
@@ -926,6 +1895,7 @@ command /updaterank [<offline player>] [<string>]:
 				add "mineplex.trainee" to arg-1's permissions
 				add "mineplex.mod" to arg-1's permissions
 				add "mineplex.legend" to arg-1's permissions
+				add "mineplex.titan" to arg-1's permissions
 				send "&9Client Manager> &7%arg-1%'s rank has been updated to Mod!"
 				send "&9Client Manager> &7Your rank has been updated to Mod!" to arg 1
 				set arg-1 tab name to "&6&lMOD &e%arg-1%"
@@ -940,6 +1910,7 @@ command /updaterank [<offline player>] [<string>]:
 				add "mineplex.mod" to arg-1's permissions
 				add "mineplex.srmod" to arg-1's permissions
 				add "mineplex.legend" to arg-1's permissions
+				add "mineplex.titan" to arg-1's permissions
 				send "&9Client Manager> &7%arg-1%'s rank has been updated to Sr.Mod!"
 				send "&9Client Manager> &7Your rank has been updated to Sr.Mod!" to arg 1
 				set arg-1 tab name to "&6&lSR.MOD &e%arg-1%"
@@ -954,6 +1925,7 @@ command /updaterank [<offline player>] [<string>]:
 				add "mineplex.mod" to arg-1's permissions
 				add "mineplex.srmod" to arg-1's permissions
 				add "mineplex.legend" to arg-1's permissions
+				add "mineplex.titan" to arg-1's permissions
 				send "&9Client Manager> &7%arg-1%'s rank has been updated to C.Mod!"
 				send "&9Client Manager> &7Your rank has been updated to C.Mod!" to arg 1
 				set arg-1 tab name to "&6&lC.MOD &e%arg-1%"
@@ -967,9 +1939,11 @@ command /updaterank [<offline player>] [<string>]:
 				add "mineplex.trainee" to arg-1's permissions
 				add "mineplex.legend" to arg-1's permissions
 				add "mineplex.mod" to arg-1's permissions
+				add "mineplex.youtube" to arg-1's permissions
 				add "mineplex.builder" to arg-1's permissions
 				add "mineplex.srmod" to arg-1's permissions
 				add "mineplex.admin" to arg-1's permissions
+				add "mineplex.titan" to arg-1's permissions
 				send "&9Client Manager> &7%arg-1%'s rank has been updated to Admin!"
 				send "&9Client Manager> &7Your rank has been updated to Admin!" to arg 1
 				set arg-1 tab name to "&4&lADMIN &e%arg-1%"
@@ -985,7 +1959,10 @@ command /updaterank [<offline player>] [<string>]:
 				add "mineplex.builder" to arg-1's permissions
 				add "mineplex.srmod" to arg-1's permissions
 				add "mineplex.admin" to arg-1's permissions
+				add "mineplex.youtube" to arg-1's permissions
+				add "mineplex.legend" to arg-1's permissions
 				add "mineplex.leader" to arg-1's permissions
+				add "mineplex.titan" to arg-1's permissions
 				send "&9Client Manager> &7%arg-1%'s rank has been updated to Leader!"
 				send "&9Client Manager> &7Your rank has been updated to Leader!" to arg 1
 				set arg-1 tab name to "&4&lLEADER &e%arg-1%"
@@ -1001,9 +1978,12 @@ command /updaterank [<offline player>] [<string>]:
 				add "mineplex.admin" to arg-1's permissions
 				add "mineplex.jrdev" to arg-1's permissions
 				add "mineplex.dev" to arg-1's permissions
+				add "mineplex.youtube" to arg-1's permissions
 				add "mineplex.builder" to arg-1's permissions
 				add "mineplex.leader" to arg-1's permissions
 				add "mineplex.owner" to arg-1's permissions
+				add "mineplex.legend" to arg-1's permissions
+				add "mineplex.titan" to arg-1's permissions
 				send "&9Client Manager> &7%arg-1%'s rank has been updated to Owner!"
 				send "&9Client Manager> &7Your rank has been updated to Owner!" to arg 1
 				set arg-1 tab name to "&4&lOWNER &e%arg-1%"
@@ -1015,6 +1995,8 @@ command /updaterank [<offline player>] [<string>]:
 				set {mineplex.rank.%arg-1%} to "&9&lBUILDER "
 				execute console command "/__mp__dp__ %arg-1%"
 				add "mineplex.builder" to arg-1's permissions
+				add "mineplex.titan" to arg-1's permissions
+				add "mineplex.legend" to arg-1's permissions
 				send "&9Client Manager> &7%arg-1%'s rank has been updated to Builder!"
 				send "&9Client Manager> &7Your rank has been updated to Builder!" to arg 1
 				set arg-1 tab name to "&9&lBUIDLER &e%arg-1%"
@@ -1025,11 +2007,14 @@ command /updaterank [<offline player>] [<string>]:
 			if argument 2 is set:
 				set {mineplex.rank.%arg-1%} to "&9&lSUPPORT "
 				execute console command "/__mp__dp__ %arg-1%"
-				add "mineplex.builder" to arg-1's permissions
 				add "mineplex.trainee" to arg-1's permissions
-				add "mineplex.mod" to arg-1's permissions
-				add "mineplex.srmod" to arg-1's permissions
 				add "mineplex.legend" to arg-1's permissions
+				add "mineplex.mod" to arg-1's permissions
+				add "mineplex.youtube" to arg-1's permissions
+				add "mineplex.builder" to arg-1's permissions
+				add "mineplex.srmod" to arg-1's permissions
+				add "mineplex.admin" to arg-1's permissions
+				add "mineplex.titan" to arg-1's permissions
 				send "&9Client Manager> &7%arg-1%'s rank has been updated to Support!"
 				send "&9Client Manager> &7Your rank has been updated to Support!" to arg 1
 				set arg-1 tab name to "&9&lSUPPORT &e%arg-1%"
@@ -1045,6 +2030,7 @@ command /updaterank [<offline player>] [<string>]:
 				add "mineplex.mod" to arg-1's permissions
 				add "mineplex.srmod" to arg-1's permissions
 				add "mineplex.legend" to arg-1's permissions
+				add "mineplex.titan" to arg-1's permissions
 				send "&9Client Manager> &7%arg-1%'s rank has been updated to Media!"
 				send "&9Client Manager> &7Your rank has been updated to Media!" to arg 1
 				set arg-1 tab name to "&9&lMEDIA &e%arg-1%"
@@ -1056,6 +2042,8 @@ command /updaterank [<offline player>] [<string>]:
 				set {mineplex.rank.%arg-1%} to "&9&lMAPLEAD "
 				execute console command "/__mp__dp__ %arg-1%"
 				add "mineplex.builder" to arg-1's permissions
+				add "mineplex.titan" to arg-1's permissions
+				add "mineplex.legend" to arg-1's permissions
 				send "&9Client Manager> &7%arg-1%'s rank has been updated to Maplead!"
 				send "&9Client Manager> &7Your rank has been updated to Maplead!" to arg 1
 				set arg-1 tab name to "&9&lMAPLEAD &e%arg-1%"
@@ -1071,6 +2059,8 @@ command /updaterank [<offline player>] [<string>]:
 				add "mineplex.srmod" to arg-1's permissions
 				add "mineplex.builder" to arg-1's permissions
 				add "mineplex.jrdev" to arg-1's permissions
+				add "mineplex.legend" to arg-1's permissions
+				add "mineplex.titan" to arg-1's permissions
 				send "&9Client Manager> &7%arg-1%'s rank has been updated to Jr.Dev!"
 				send "&9Client Manager> &7Your rank has been updated to Jr.Dev!" to arg 1
 				set arg-1 tab name to "&c&lJR.DEV &e%arg-1%"
@@ -1089,7 +2079,10 @@ command /updaterank [<offline player>] [<string>]:
 				add "mineplex.owner" to arg-1's permissions
 				add "mineplex.builder" to arg-1's permissions
 				add "mineplex.dev" to arg-1's permissions
+				add "mineplex.youtube" to arg-1's permissions
 				add "mineplex.admin" to arg-1's permissions
+				add "mineplex.legend" to arg-1's permissions
+				add "mineplex.titan" to arg-1's permissions
 				send "&9Client Manager> &7%arg-1%'s rank has been updated to Dev!"
 				send "&9Client Manager> &7Your rank has been updated to Dev!" to arg 1
 				set arg-1 tab name to "&4&lDEV &e%arg-1%"
@@ -1101,6 +2094,9 @@ command /updaterank [<offline player>] [<string>]:
 				set {mineplex.rank.%arg-1%} to "&5&lTWITCH "
 				execute console command "/__mp__dp__ %arg-1%"
 				add "mineplex.twitch" to arg-1's permissions
+				add "mineplex.legend" to arg-1's permissions
+				add "mineplex.titan" to arg-1's permissions
+				add "mineplex.youtube" to arg-1's permissions
 				send "&9Client Manager> &7%arg-1%'s rank has been updated to Twitch!"
 				send "&9Client Manager> &7Your rank has been updated to Twitch!" to arg 1
 				set arg-1 tab name to "&5&lTWITCH &e%arg-1%"
@@ -1112,6 +2108,8 @@ command /updaterank [<offline player>] [<string>]:
 				set {mineplex.rank.%arg-1%} to "&c&lYOUTUBE "
 				execute console command "/__mp__dp__ %arg-1%"
 				add "mineplex.youtube" to arg-1's permissions
+				add "mineplex.legend" to arg-1's permissions
+				add "mineplex.titan" to arg-1's permissions
 				send "&9Client Manager> &7%arg-1%'s rank has been updated to Youtube!"
 				send "&9Client Manager> &7Your rank has been updated to Youtube!" to arg 1
 				set arg-1 tab name to "&c&lYOUTUBE &e%arg-1%"
@@ -1123,6 +2121,8 @@ command /updaterank [<offline player>] [<string>]:
 				set {mineplex.rank.%arg-1%} to "&5&lYT "
 				execute console command "/__mp__dp__ %arg-1%"
 				add "mineplex.youtube" to arg-1's permissions
+				add "mineplex.legend" to arg-1's permissions
+				add "mineplex.titan" to arg-1's permissions
 				send "&9Client Manager> &7%arg-1%'s rank has been updated to YT!"
 				send "&9Client Manager> &7Your rank has been updated to YT!" to arg 1
 				set arg-1 tab name to "&5&lYT &e%arg-1%"
@@ -1134,7 +2134,7 @@ command /updaterank [<offline player>] [<string>]:
 
 command /testrank [<offline player>] [<string>]:
 	permission: mineplex.srmod
-	permission message: &9Permissions> &7This requires Permmission Rank [&6SR.MOD&7].
+	permission message: &9Permissions> &7This requires Permission Rank [&6SR.MOD&7].
 	trigger:
 		if arg 1 is not set:
 			send "&9Client Manager> &7/testrank joeschmo ETERNAL"
@@ -1144,67 +2144,70 @@ command /testrank [<offline player>] [<string>]:
 				send "&9Client Manager> &7/testrank joeschmo ETERNAL"
 			else:
 				if arg 1 is online:
-					if arg 2 is "ULTRA":
-						set {mineplex.testrank.%arg-1%} to {mineplex.rank.%arg-1%}
-						set {mineplex.rank.%arg-1%} to "&b&lULTRA "
-						execute console command "/__mp__dp__ %arg-1%"
-						set {_or} to uncolored {mineplex.testrank.%arg-1%}
-						send "&9Client Manager> &7%arg-1%'s rank has been updated to %arg-2%!"
-						send "&9Client Manager> &7%arg-1%'s rank will be reset to %{_or}%on your login!"
-						send "&9Client Manager> &7Your rank has been updated to %arg-2%!" to arg 1
-						send "&9Client Manager> &7Your rank will be reset to %{_or}%on your login!" to arg 1
-						set arg-1 tab name to "&b&lULTRA &e%arg-1%"
-						updateRankAPI(arg-1)
-					else if arg 2 is "HERO":
-						set {mineplex.testrank.%arg-1%} to {mineplex.rank.%arg-1%}
-						set {mineplex.rank.%arg-1%} to "&d&lHERO "
-						execute console command "/__mp__dp__ %arg-1%"
-						set {_or} to uncolored {mineplex.testrank.%arg-1%}
-						send "&9Client Manager> &7%arg-1%'s rank has been updated to %arg-2%!"
-						send "&9Client Manager> &7%arg-1%'s rank will be reset to %{_or}%on your login!"
-						send "&9Client Manager> &7Your rank has been updated to %arg-2%!" to arg 1
-						send "&9Client Manager> &7Your rank will be reset to %{_or}%on your login!" to arg 1
-						set arg-1 tab name to "&d&lHERO &e%arg-1%"
-						updateRankAPI(arg-1)
-					else if arg 2 is "LEGEND":
-						set {mineplex.testrank.%arg-1%} to {mineplex.rank.%arg-1%}
-						set {mineplex.rank.%arg-1%} to "&a&lLEGEND "
-						execute console command "/__mp__dp__ %arg-1%"
-						set {_or} to uncolored {mineplex.testrank.%arg-1%}
-						send "&9Client Manager> &7%arg-1%'s rank has been updated to %arg-2%!"
-						send "&9Client Manager> &7%arg-1%'s rank will be reset to %{_or}%on your login!"
-						send "&9Client Manager> &7Your rank has been updated to %arg-2%!" to arg 1
-						send "&9Client Manager> &7Your rank will be reset to %{_or}%on your login!" to arg 1
-						set arg-1 tab name to "&a&lLEGEND &e%arg-1%"
-						updateRankAPI(arg-1)
-					else if arg 2 is "TITAN":
-						set {mineplex.testrank.%arg-1%} to {mineplex.rank.%arg-1%}
-						set {mineplex.rank.%arg-1%} to "&c&lTITAN "
-						execute console command "/__mp__dp__ %arg-1%"
-						set {_or} to uncolored {mineplex.testrank.%arg-1%}
-						send "&9Client Manager> &7%arg-1%'s rank has been updated to %arg-2%!"
-						send "&9Client Manager> &7%arg-1%'s rank will be reset to %{_or}%on your login!"
-						send "&9Client Manager> &7Your rank has been updated to %arg-2%!" to arg 1
-						send "&9Client Manager> &7Your rank will be reset to %{_or}%on your login!" to arg 1
-						set arg-1 tab name to "&c&lTITAN &e%arg-1%"
-						updateRankAPI(arg-1)
-					else if arg 2 is "ETERNAL":
-						set {mineplex.testrank.%arg-1%} to {mineplex.rank.%arg-1%}
-						set {mineplex.rank.%arg-1%} to "&3&lETERNAL "
-						execute console command "/__mp__dp__ %arg-1%"
-						set {_or} to uncolored {mineplex.testrank.%arg-1%}
-						send "&9Client Manager> &7%arg-1%'s rank has been updated to %arg-2%!"
-						send "&9Client Manager> &7%arg-1%'s rank will be reset to %{_or}%on your login!"
-						send "&9Client Manager> &7Your rank has been updated to %arg-2%!" to arg 1
-						send "&9Client Manager> &7Your rank will be reset to %{_or}%on your login!" to arg 1
-						set arg-1 tab name to "&3&lETERNAL &e%arg-1%"
-						updateRankAPI(arg-1)
+					if {mineplex.testrank.%arg-1%} is not set:
+						if arg 2 is "ULTRA":
+							set {mineplex.testrank.%arg-1%} to {mineplex.rank.%arg-1%}
+							set {mineplex.rank.%arg-1%} to "&b&lULTRA "
+							execute console command "/__mp__dp__ %arg-1%"
+							set {_or} to uncolored {mineplex.testrank.%arg-1%}
+							send "&9Client Manager> &7%arg-1%'s rank has been updated to %arg-2%!"
+							send "&9Client Manager> &7%arg-1%'s rank will be reset to %{_or}%on your login!"
+							send "&9Client Manager> &7Your rank has been updated to %arg-2%!" to arg 1
+							send "&9Client Manager> &7Your rank will be reset to %{_or}%on your login!" to arg 1
+							set arg-1 tab name to "&b&lULTRA &e%arg-1%"
+							updateRankAPI(arg-1)
+						else if arg 2 is "HERO":
+							set {mineplex.testrank.%arg-1%} to {mineplex.rank.%arg-1%}
+							set {mineplex.rank.%arg-1%} to "&d&lHERO "
+							execute console command "/__mp__dp__ %arg-1%"
+							set {_or} to uncolored {mineplex.testrank.%arg-1%}
+							send "&9Client Manager> &7%arg-1%'s rank has been updated to %arg-2%!"
+							send "&9Client Manager> &7%arg-1%'s rank will be reset to %{_or}%on your login!"
+							send "&9Client Manager> &7Your rank has been updated to %arg-2%!" to arg 1
+							send "&9Client Manager> &7Your rank will be reset to %{_or}%on your login!" to arg 1
+							set arg-1 tab name to "&d&lHERO &e%arg-1%"
+							updateRankAPI(arg-1)
+						else if arg 2 is "LEGEND":
+							set {mineplex.testrank.%arg-1%} to {mineplex.rank.%arg-1%}
+							set {mineplex.rank.%arg-1%} to "&a&lLEGEND "
+							execute console command "/__mp__dp__ %arg-1%"
+							set {_or} to uncolored {mineplex.testrank.%arg-1%}
+							send "&9Client Manager> &7%arg-1%'s rank has been updated to %arg-2%!"
+							send "&9Client Manager> &7%arg-1%'s rank will be reset to %{_or}%on your login!"
+							send "&9Client Manager> &7Your rank has been updated to %arg-2%!" to arg 1
+							send "&9Client Manager> &7Your rank will be reset to %{_or}%on your login!" to arg 1
+							set arg-1 tab name to "&a&lLEGEND &e%arg-1%"
+							updateRankAPI(arg-1)
+						else if arg 2 is "TITAN":
+							set {mineplex.testrank.%arg-1%} to {mineplex.rank.%arg-1%}
+							set {mineplex.rank.%arg-1%} to "&c&lTITAN "
+							execute console command "/__mp__dp__ %arg-1%"
+							set {_or} to uncolored {mineplex.testrank.%arg-1%}
+							send "&9Client Manager> &7%arg-1%'s rank has been updated to %arg-2%!"
+							send "&9Client Manager> &7%arg-1%'s rank will be reset to %{_or}%on your login!"
+							send "&9Client Manager> &7Your rank has been updated to %arg-2%!" to arg 1
+							send "&9Client Manager> &7Your rank will be reset to %{_or}%on your login!" to arg 1
+							set arg-1 tab name to "&c&lTITAN &e%arg-1%"
+							updateRankAPI(arg-1)
+						else if arg 2 is "ETERNAL":
+							set {mineplex.testrank.%arg-1%} to {mineplex.rank.%arg-1%}
+							set {mineplex.rank.%arg-1%} to "&3&lETERNAL "
+							execute console command "/__mp__dp__ %arg-1%"
+							set {_or} to uncolored {mineplex.testrank.%arg-1%}
+							send "&9Client Manager> &7%arg-1%'s rank has been updated to %arg-2%!"
+							send "&9Client Manager> &7%arg-1%'s rank will be reset to %{_or}%on your login!"
+							send "&9Client Manager> &7Your rank has been updated to %arg-2%!" to arg 1
+							send "&9Client Manager> &7Your rank will be reset to %{_or}%on your login!" to arg 1
+							set arg-1 tab name to "&3&lETERNAL &e%arg-1%"
+							updateRankAPI(arg-1)
+						else:
+							send "&9Client Manager> &c&lThis player already has a test rank!"
 					else:
 						send "&9Client Manager> &c&lInvalid rank!"
 
 command /getadmin:
 	permission: mineplex.jrdev
-	permission message: &9Permissions> &7This requires Permmission Rank [&9JR.DEV&7].
+	permission message: &9Permissions> &7This requires Permission Rank [&9JR.DEV&7].
 	trigger:
 		if {mineplex.rank.%player%} is "&c&lJR.DEV ":
 			if {mineplex.disguise.%player%} is set:
@@ -1213,19 +2216,25 @@ command /getadmin:
 				set {_p} to player
 			if {mineplex.adminmode.%player%} is true:
 				remove "mineplex.admin" from player's permissions
+				remove "mineplex.builder" from player's permissions
+				remove "mineplex.youtube" from player's permissions
 				set {mineplex.adminmode.%player%} to false
 				send "&9Admin Mode> &7%{_p}% Admin Mode: &cFalse"
 			else:
 				set {mineplex.adminmode.%player%} to true
 				add "mineplex.admin" to player's permissions
+				add "mineplex.builder" to player's permissions
+				add "mineplex.youtube" to player's permissions
 				send "&9Admin Mode> &7%{_p}% Admin Mode: &aTrue"
 		else:
 			send "&9Admin Mode> &7/getadmin is only for JR.DEV!"
 
 command /__mp__dp__ <player>:
+	executable by: console
 	trigger:
 		remove "mineplex.trainee" from arg-1's permissions
 		remove "mineplex.legend" from arg-1's permissions
+		remove "mineplex.titan" from arg-1's permissions
 		remove "mineplex.mod" from arg-1's permissions
 		remove "mineplex.srmod" from arg-1's permissions
 		remove "mineplex.admin" from arg-1's permissions
@@ -1237,7 +2246,131 @@ command /__mp__dp__ <player>:
 		remove "mineplex.youtube" from arg-1's permissions
 		remove "mineplex.builder" from arg-1's permissions
 
-#command /report [<string>] [<string>]:
+command /__mp__rawreport__ <player> <player> <text> <text> <text>:
+	executable by: console
+	trigger:
+		if arg 3 is "Hacking":
+			set {mineplex.report.player.%{mineplex.report.id}%} to arg-1
+			set {mineplex.report.reporter.%{mineplex.report.id}%} to arg-2
+			set {mineplex.report.type.%{mineplex.report.id}%} to arg-3
+			set {mineplex.report.server.%{mineplex.report.id}%} to arg-4
+			set {mineplex.report.reason.%{mineplex.report.id}%} to arg-5
+			set {mineplex.report.open.%{mineplex.report.id}%} to true
+			send "&9Report> ##%{mineplex.report.id}%> &aSuccessfully created report." to arg-2 
+		else if arg 3 is "Chat-Abuse":
+			set {mineplex.report.player.%{mineplex.report.id}%} to arg-1
+			set {mineplex.report.reporter.%{mineplex.report.id}%} to arg-2
+			set {mineplex.report.type.%{mineplex.report.id}%} to arg-3
+			set {mineplex.report.server.%{mineplex.report.id}%} to arg-4
+			set {mineplex.report.reason.%{mineplex.report.id}%} to arg-5
+			set {mineplex.report.open.%{mineplex.report.id}%} to true
+			send "&9Report> ##%{mineplex.report.id}%> &aSuccessfully created report." to arg-2 
+		else if arg 3 is "Gameplay":
+			set {mineplex.report.player.%{mineplex.report.id}%} to arg-1
+			set {mineplex.report.reporter.%{mineplex.report.id}%} to arg-2
+			set {mineplex.report.type.%{mineplex.report.id}%} to arg-3
+			set {mineplex.report.server.%{mineplex.report.id}%} to arg-4
+			set {mineplex.report.reason.%{mineplex.report.id}%} to arg-5
+			set {mineplex.report.open.%{mineplex.report.id}%} to true
+			send "&9Report> ##%{mineplex.report.id}%> &aSuccessfully created report." to arg-2 
+		else:
+			stop
+		loop all players:
+			if loop-player has permission "mineplex.trainee":
+				if {mineplex.pref.report.%loop-player%} is true:
+					send "&9[Report ##%{mineplex.report.id}%] &7%arg-2% has reported %arg-1% for a &e%arg-3% &7offence with reason &e%arg-5%&7!" to loop-player
+		add 1 to {mineplex.report.id}
+
+command /report [<offline player>] [<text>]:
+	permission: mineplex.titan
+	permission message: "&9Report> &cThe report feature is currently in a trial phase for Titan players"
+	trigger:
+		if arg-2 is set:
+			open chest with 3 rows named "Report %arg-1%" to player
+			format slot 11 of player with iron sword named "&c&lHacking" with lore "&7X-ray, Forcefield, Speed, Fly etc" to close then run [send "&9Report ##%{mineplex.report.id}%> &aSuccessfully created report." to player]->[execute console command "/__mp__rawreport__ %arg-1% %player% Hacking %player's world% %arg-2%"]
+			format slot 13 of player with book and quill named "&3&lChat Abuse" with lore "&7Verbal Abuse, Spam, Harassment, Trolling, etc" to close then run [send "&9Report ##%{mineplex.report.id}%> &aSuccessfully created report." to player]->[execute console command "/__mp__rawreport__ %arg-1% %player% Chat-Abuse %player's world% %arg-2%"]
+			format slot 15 of player with ender pearl named "&fGameplay" with lore "&7Map and Bug Exploits" to close then run [send "&9Report ##%{mineplex.report.id}%> &aSuccessfully created report." to player]->[execute console command "/__mp__rawreport__ %arg-1% %player% Gameplay %player's world% %arg-2%"]
+		else:
+			send "&9Report> &cInvalid Usage: &e/report <player> <reason>"
+
+command /reporthandle [<string>] [<string>]:
+	aliases: /rh
+	permission: mineplex.mod
+	permission message: &9Permissions> &7This requires Permission Rank [&9MOD&7].
+	trigger:
+		if arg 1 is not set:
+			send "&9Report> &7Corect Usage: &e/reporthandle <report id>"
+		else:
+			set {_id} to arg-1 parsed as a number
+			if {_id} is a number:
+				if {mineplex.report.open.%{_id}%} is true:
+					if {mineplex.report.hand.%{_id}%} is not set:
+						set {mineplex.report.hand.%{_id}%} to player
+						loop all players:
+							if loop-player has permission "mineplex.trainee":
+								if {mineplex.pref.report.%loop-player%} is true:
+									send "&9[Report %{_id}%] &e%player% &7is handling this report." to loop-player
+					else:
+						send "&9Report> &7This report is already being handling!"
+				else:
+					send "&9Report> &7This report has already been closed or does not exsit!"
+			else:
+				send "&9Report> &cYour  arguments are inappropriate for this command!"
+				send "&9Report> &e/reporthandle (id)"
+
+command /reportclose [<string>] [<string>] [<string>]:
+	aliases: /rc
+	permission: mineplex.mod
+	permission message: &9Permissions> &7This requires Permission Rank [&9MOD&7].
+	trigger:
+		if arg 1 is not set:
+			send "&9Report> &7Corect Usage: &e/reportclose (report id)"
+			send "&9Report> &7Reasons: &eUNDETERMINED MUTED BANNED ABUSE"
+			stop
+		if arg 2 is not set:
+			send "&9Report> &7Corect Usage: &e/reportclose (report id)"
+			send "&9Report> &7Reasons: &eUNDETERMINED MUTED BANNED ABUSE"
+			stop
+		else:
+			set {_id} to arg-1 parsed as a number
+			if {_id} is a number:
+				if {mineplex.report.open.%{_id}%} is true:
+					if arg 2 is "UNDETERMINED":
+						set {_r} to "&f&lCould not determine"
+						set {mineplex.report.open.%{_id}%} to false
+						loop all players:
+							if loop-player has permission "mineplex.trainee":
+								if {mineplex.pref.report.%loop-player%} is true:
+									send "&9[Report %{_id}%] &e%player% &7closed this report. (%{_r}%&7)." to loop-player
+					else if arg 2 is "MUTED":
+						set {_r} to "&e&lMuted"
+						set {mineplex.report.open.%{_id}%} to false
+						loop all players:
+							if loop-player has permission "mineplex.trainee":
+								if {mineplex.pref.report.%loop-player%} is true:
+									send "&9[Report %{_id}%] &e%player% &7closed this report. (%{_r}%&7)." to loop-player
+					else if arg 2 is "BANNED":
+						set {_r} to "&c&lBanned"
+						set {mineplex.report.open.%{_id}%} to false
+						loop all players:
+							if loop-player has permission "mineplex.trainee":
+								if {mineplex.pref.report.%loop-player%} is true:
+									send "&9[Report %{_id}%] &e%player% &7closed this report. (%{_r}%&7)." to loop-player
+					else if arg 2 is "ABUSE":
+						set {_r} to "&4&lAbuse of report system"
+						set {mineplex.report.open.%{_id}%} to false
+						loop all players:
+							if loop-player has permission "mineplex.trainee":
+								if {mineplex.pref.report.%loop-player%} is true:
+									send "&9[Report %{_id}%] &e%player% &7closed this report. (%{_r}%&7)." to loop-player
+					else:
+						send "&9Report> &cInvalid report reason!"
+				else:
+					send "&9Report> &7This report has already been closed or does not exsit!"
+			else:
+				send "&9Report> &cYour  arguments are inappropriate for this command!"
+				send "&9Report> &e/reportclose (report id) (reason)"
+				send "&9Report> &7Reasons: &eUNDETERMINED MUTED BANNED ABUSE"
 
 #To Lazy to Move This
 on right click:
@@ -1259,7 +2392,7 @@ command /cosmetic-system <integer>:
 
 command /shard [<offline player>] [<string>] [<string>]:
 	permission: mineplex.admin
-	permission message: &9Permissions> &7This requires Permmission Rank [&9ADMIN&7].
+	permission message: &9Permissions> &7This requires Permission Rank [&9ADMIN&7].
 	trigger:
 		if arg 1 is not set:
 			send "&9Shard> &7Missing Args: &e/shard <player> <amount>"
@@ -1274,13 +2407,13 @@ command /shard [<offline player>] [<string>] [<string>]:
 					if {_num} is an integer:
 						add {_num} to {mineplex.shards.%arg-1%}
 						send "&9Shard> &7You gave &e%arg-2% Shards &7to &e%arg-1%&7."
-						send "&9Shard> &e%player% &7gave you &e%arg-2% Shards&7."
+						send "&9Shard> &e%player% &7gave you &e%arg-2% Shards&7." to arg-1
 					else:
 						send "&9Shard> &7Invalid Shards Amount"
 
 command /gem [<offline player>] [<string>] [<string>]:
 	permission: mineplex.admin
-	permission message: &9Permissions> &7This requires Permmission Rank [&9ADMIN&7].
+	permission message: &9Permissions> &7This requires Permission Rank [&9ADMIN&7].
 	trigger:
 		if arg 1 is not set:
 			send "&9Gem> &7Missing Args: &e/gem <player> <amount>"
@@ -1295,13 +2428,13 @@ command /gem [<offline player>] [<string>] [<string>]:
 					if {_num} is an integer:
 						add {_num} to {mineplex.gems.%arg-1%}
 						send "&9Gem> &7You gave &e%arg-2% Gems &7to &e%arg-1%&7."
-						send "&9Gem> &e%player% &7gave you &e%arg-2% Gems&7."
+						send "&9Gem> &e%player% &7gave you &e%arg-2% Gems&7." to arg-1
 					else:
 						send "&9Gem> &7Invalid Gems Amount"
 
 command /gadget:
 	permission: mineplex.admin
-	permission message: &9Permissions> &7This requires Permmission Rank [&9ADMIN&7].
+	permission message: &9Permissions> &7This requires Permission Rank [&9ADMIN&7].
 	trigger:
 		if {mineplex.gadget.enabled} is true:
 			set {mineplex.gadget.enabled} to false
@@ -1316,7 +2449,7 @@ command /gadget:
 
 command /s [<text>]:
 	permission: mineplex.mod
-	permission message: &9Permissions> &7This requires Permmission Rank [&9MOD&7].
+	permission message: &9Permissions> &7This requires Permission Rank [&9MOD&7].
 	trigger:
 		if {mineplex.disguise.%player%} is set:
 			set {_p} to {mineplex.disguise.%player%}
@@ -1351,7 +2484,7 @@ command /gm [<player>]:
 				send "&9Game Mode> &7%arg-1% Creative Mode: &cFalse"
 
 command /message [<player>] [<text>]:
-	aliases: /tell, /m, /w
+	aliases: /tell, /m, /w, /msg
 	trigger:
 		if {mineplex.disguise.%player%} is set:
 			set {_p} to {mineplex.disguise.%player%}
@@ -1476,8 +2609,11 @@ command /r [<text>]:
 			set {_p} to player
 		if {mineplex.lastm.%player%} is set:
 			if argument 1 is set:
-				send "&6&l%{_p}% > %{mineplex.lastm.%player%}% &e&l%arg-1%"
-				send "&6&l%{_p}% > %{mineplex.lastm.%player%}% &e&l%arg-1%" to {mineplex.lastm.%player%}
+				if {mineplex.lastm.%player%} is online:
+					send "&6&l%{_p}% > %{mineplex.lastm.%player%}% &e&l%arg-1%"
+					send "&6&l%{_p}% > %{mineplex.lastm.%player%}% &e&l%arg-1%" to {mineplex.lastm.%player%}
+				else:
+					send "&9Message> &e%{mineplex.lastm.%player%}% &7is no longer online!"
 			else:
 				send "&9Message> &cErr...something went wrong?"
 		else:
@@ -1573,7 +2709,7 @@ command /party [<string>] [<player>]:
 
 command /announce [<text>]:
 	permission: mineplex.admin
-	permission message: &9Permissions> &7This requires Permmission Rank [&9ADMIN&7].
+	permission message: &9Permissions> &7This requires Permission Rank [&9ADMIN&7].
 	trigger:
 		if argument 1 is set:
 			send all players title "&eAnnouncement" with subtitle "&f%arg-1%" for 10 seconds
@@ -1588,16 +2724,33 @@ on connect:
 		if {banned::%player%::type} is "perm":
 			kick player due to "&c&lYou are banned for Permanent%nl%&f%{banned::%player%::reason}%%nl%&2Unfairly banned? Appeal at &a%{mineplex.config.appealwebsite}%"
 			stop
+		if {banned::%player%::type} is "report":
+			kick player due to "&c&lYou are banned for Permanent%nl%&f%{banned::%player%::reason}%%nl%&2Unfairly banned? Appeal at &a%{mineplex.config.appealwebsite}%"
+			stop
 		if {banned::%player%::type} is "temp":		
 			set {_waited} to difference between {banned::%player%::when} and now
 			if {_waited} is less than {banned::%player%::time}:
 				kick player due to "&c&lYou are banned for %{banned::%player%::time}%%nl%&f%{banned::%player%::reason}%%nl%&2Unfairly banned? Appeal at &a%{mineplex.config.appealwebsite}%"
+			else:
+				execute console command "/__mp__unban__ %player%"
 
 command /punish [<offline player>] [<text>]:
 	aliases: /p
 	permission: mineplex.trainee
-	permission message: &9Permissions> &7This requires Permmission Rank [&9TRAINEE&7].
+	permission message: &9Permissions> &7This requires Permission Rank [&9TRAINEE&7].
 	trigger:
+		if {mineplex.punish.past.tempban.%arg-1%} is not set:
+			set {mineplex.punish.past.tempban.%arg-1%} to 0
+		if {mineplex.punish.past.permban.%arg-1%} is not set:
+			set {mineplex.punish.past.permban.%arg-1%} to 0
+		if {mineplex.punish.past.tempmute.%arg-1%} is not set:
+			set {mineplex.punish.past.tempmute.%arg-1%} to 0
+		if {mineplex.punish.past.permmute.%arg-1%} is not set:
+			set {mineplex.punish.past.permmute.%arg-1%} to 0
+		if {mineplex.punish.past.warn.%arg-1%} is not set:
+			set {mineplex.punish.past.warn.%arg-1%} to 0
+		if {mineplex.punish.past.reportban.%arg-1%} is not set:
+			set {mineplex.punish.past.reportban.%arg-1%} to 0
 		if args 1 is not set:
 			message "&9Punish> &7Command List:%nl%&6/punish &7<player> <reason> &6Mod"
 			stop
@@ -1606,64 +2759,69 @@ command /punish [<offline player>] [<text>]:
 				message "&9Punish> &7Command List:%nl%&6/punish &7<player> <reason> &6Mod"
 				stop
 			if args 2 is set:
-				if player has permission "mineplex.admin":
-					open chest with 6 rows named "                 Punish" to player
+				open chest with 6 rows named "                 Punish" to player
+				if {mineplex.rank.%player%} is "&4&lDEV " or "&c&lJR.DEV ":
+					wait 2 ticks
+					format slot 0 of player with shiny dandelion named "&a&lDEV WARNING" with lore "&rDevelopers are advised against using the punish system||&runless permitted by LT" to be unstealable
+				if player has permission "mineplex.srmod":
 					wait 2 ticks
 					format slot 4 of player with arg-1's skull named "&a&l%arg-1%" with lore "&7&lReason: &7%arg-2%" to be unstealable
 					format slot 10 of player with book and quill named "&a&lChat Offense" with lore "&7Verbal Abuse, Spam, Harrassment, Trolling, etc" to be unstealable
-					format slot 19 of player with cactus green named "&a&lSeverity 1" with lore "&fMute Duration: &e10.0 Hours||||&7Light Spam||&f   Sending the same message 2-5 times||||&7Light Advertising||&f   'anyone want to play on minecade?'||||&7Light Abuse/Harassment||&f   'you suck at this game'||||&7Hackusations||&f   'you're such a hacker!'||||&7Trolling||||&2Give Warning if 0 Past Offences and 0 Warnings." to close then run [do [execute console command "/__mp__htempmute__ %arg-1% 10 %player% %arg-2%"]->[execute console command "/__mp__imm__ %player% %arg-1% 10 hours"]]
-					format slot 28 of player with dandelion yellow named "&a&lSeverity 2" with lore "&fMute Duration: &e1.0 Days||||&7Medium Spam||   &fSending the same message 6-20 times||||&7Medium Advertising:||   &f'join crap.server.net' - posted once||||&7Medium Abuse/Harassment||   &f'piss off you stupid newb'||   &f'SHIT ADMINS ARE SHIT!!!'||   &f'you're terrible, learn to play'||||&7Avoiding Chat Filter||   &f'F|_|<K YOU'" to close then run [do [execute console command "/__mp__tempmute__ %arg-1% 1 %player% %arg-2%"]->[execute console command "/__mp__imm__ %player% %arg-1% 1 day"]]
-					format slot 37 of player with rose red named "&a&lSeverity 3" with lore "&fMute Duration: &e30.0 Days||||&7Severe Spam||   &fSending the same message 20+ times||   &fOnly really used for a spam bot||||&7Severe Abuse/Harassment||   &f'go fucking die in a fire you fucking sack of shit'" to close then run [do [execute console command "/__mp__tempmute__ %arg-1% 30 %player% %arg-2%"]->[execute console command "/__mp__imm__ %player% %arg-1% 30 days"]]
+					format slot 19 of player with cactus green named "&a&lSeverity 1" with lore "&fPast Offences: &e%{mineplex.punish.past.tempmute.%arg-1%}%||&fMute Duration: &e10.0 Hours||||&7Light Spam||&f   Sending the same message 2-5 times||||&7Light Advertising||&f   'anyone want to play on minecade?'||||&7Light Abuse/Harassment||&f   'you suck at this game'||||&7Hackusations||&f   'you're such a hacker!'||||&7Trolling||||&2Give Warning if 0 Past Offences and 0 Warnings." to close then run [do [execute console command "/__mp__htempmute__ %arg-1% 10 %player% %arg-2%"]->[execute console command "/__mp__imm__ %player% %arg-1% 10 hours"]]
+					format slot 28 of player with dandelion yellow named "&a&lSeverity 2" with lore "&fPast Offences: &e%{mineplex.punish.past.tempmute.%arg-1%}%||&fMute Duration: &e1.0 Days||||&7Medium Spam||   &fSending the same message 6-20 times||||&7Medium Advertising:||   &f'join crap.server.net' - posted once||||&7Medium Abuse/Harassment||   &f'piss off you stupid newb'||   &f'SHIT ADMINS ARE SHIT!!!'||   &f'you're terrible, learn to play'||||&7Avoiding Chat Filter||   &f'F|_|<K YOU'" to close then run [do [execute console command "/__mp__tempmute__ %arg-1% 1 %player% %arg-2%"]->[execute console command "/__mp__imm__ %player% %arg-1% 1 day"]]
+					format slot 37 of player with rose red named "&a&lSeverity 3" with lore "&fPast Offences: &e%{mineplex.punish.past.tempmute.%arg-1%}%||&fMute Duration: &e30.0 Days||||&7Severe Spam||   &fSending the same message 20+ times||   &fOnly really used for a spam bot||||&7Severe Abuse/Harassment||   &f'go fucking die in a fire you fucking sack of shit'" to close then run [do [execute console command "/__mp__tempmute__ %arg-1% %player% 30 %player% %arg-2%"]->[execute console command "/__mp__imm__ %player% %arg-1% 30 days"]]
 					format slot 12 of player with hopper named "&a&lGeneral Offense" with lore "&7Command/Map/Class/Skill exploits, etc" to be unstealable
-					format slot 21 of player with cactus green named "&a&lSeverity 1" with lore "&fBan Duration: &e4.0 Hours||||&7Team Killing||&f   Intentionally killing your team mates||||&7Trolling (Gameplay)||&f   Using abilities to trap players in spawn||||&7Map/Bug Exploiting||&f   Abusing an exploit to gain an advantage" to close then run [do [execute console command "/__mp__htempban__ %arg-1% %player% 4 %arg-2%"]->[execute console command "/__mp__ibm__ %player% %arg-1% 4 hours"]]
+					format slot 21 of player with cactus green named "&a&lSeverity 1" with lore "&fPast Offences: &e%{mineplex.punish.past.tempban.%arg-1%}%||&fBan Duration: &e4.0 Hours||||&7Team Killing||&f   Intentionally killing your team mates||||&7Trolling (Gameplay)||&f   Using abilities to trap players in spawn||||&7Map/Bug Exploiting||&f   Abusing an exploit to gain an advantage" to close then run [do [execute console command "/__mp__htempban__ %arg-1% %player% 4 %arg-2%"]->[execute console command "/__mp__ibm__ %player% %arg-1% 4 hours"]]
 					format slot 14 of player with iron sword named "&a&lClient Mod" with lore "&7X-ray, Forcefield, Speed, Fly, Inventory Hacks, etc" to be unstealable
-					format slot 23 of player with cactus green named "&a&lSeverity 1" with lore "&fBan Duration: &e1.0 Days||||&7Examples:||&f   Damage Indicators||&f   Player Radar" to close then run [do [execute console command "/__mp__tempban__ %arg-1% %player% 1 %arg-2%"]->[execute console command "/__mp__ibm__ %player% %arg-1% 1 day"]]
-					format slot 32 of player with dandelion yellow named "&a&lSeverity 2" with lore "&fBan Duration: &e30.0 Days||||&7Hacks:||   &fForcefield||   &fSpeed Hack||   &fReach Hack||   &fSpeed Hack||   &fOther Hack||||&7Hack Reports (SR & FR):||   &fForcefield||   &fSpeed Hack||   &fReach Hack||   &fSpeed Hack||   &fOther Hack||   &fFly Hack" to close then run [do [execute console command "/__mp__tempban__ %arg-1% %player% 30 %arg-2%"]->[execute console command "/__mp__ibm__ %player% %arg-1% 30 days"]]
-					format slot 41 of player with rose red named "&a&lSeverity 3" with lore "&fBan Duration: &e30.0 Days||||&7Hacks:||   &fFly Hack||||&c&lWARNING:||&cUse Severity 2 for Forum/Staff Reports" to close then run [do [execute console command "/__mp__tempban__ %arg-1% %player% 30 %arg-2%"]->[execute console command "/__mp__ibm__ %player% %arg-1% 30 days"]]
-					format slot 25 of player with paper named "&a&lWarning" with lore "||&7Example Warning Input:||&f   Spam - Repeatedly writing MEOW||&f   Swearing - Saying 'fuck' and 'shit'||&f   Hack Accusation - Accused Tomp13 of hacking||&f   Trolling - was trying to make bob angry in chat" to close then run [execute console command "/__mp__warn__ %arg-1% %player% %arg-2%"]
-					format slot 34 of player with redstone block named "&a&lPermanent Ban" with lore "&fBan Duration: &ePermanent||||&2Must supply a detailed reason for Ban." to close then run [do [execute console command "/__mp__ban__ %arg-1% %player% %arg-2%"]->[execute console command "/__mp__ibm__ %player% %arg-1% Permanent"]]
-					format slot 43 of player with book and quill named "&a&lPermanent Mute" with lore "&fMute Duration: &ePermanent||||&7Severe Advertising:||&f   'JOIN MINECADE! THIS SUCKS!||&f   'join crap.server.net! FREE ADMIN!||||&2Must supply a detailed reason for Mute." to close then run [do [execute console command "/__mp__mute__ %arg-1% %player% %arg-2%"]->[execute console command "/__mp__imm__ %player% %arg-1% Permanent"]]
-					format slot 8 of player with shiny book and quill named "&a&lUnmute" with lore "&fUnmute Reason: &e%arg-2%" to close then run [do [execute console command "/__mp__iumm__ %player% %arg-1%"]->[execute console command "/__mp__unmute__ %arg-1%"]]
-					format slot 7 of player with shiny redstone block named "&a&lUnban" with lore "&fUnban Reason: &e%arg-2%" to close then run [do [execute console command "/__mp__unban__ %arg-1%"]->[execute console command "/__mp__iubm__ %player% %arg-1%"]]
+					format slot 23 of player with cactus green named "&a&lSeverity 1" with lore "&fPast Offences: &e%{mineplex.punish.past.tempban.%arg-1%}%||&fBan Duration: &e1.0 Days||||&7Examples:||&f   Damage Indicators||&f   Player Radar" to close then run [do [execute console command "/__mp__tempban__ %arg-1% %player% 1 %arg-2%"]->[execute console command "/__mp__ibm__ %player% %arg-1% 1 day"]]
+					format slot 32 of player with dandelion yellow named "&a&lSeverity 2" with lore "&fPast Offences: &e%{mineplex.punish.past.tempban.%arg-1%}%||&fBan Duration: &e30.0 Days||||&7Hacks:||   &fForcefield||   &fSpeed Hack||   &fReach Hack||   &fSpeed Hack||   &fOther Hack||||&7Hack Reports (SR & FR):||   &fForcefield||   &fSpeed Hack||   &fReach Hack||   &fSpeed Hack||   &fOther Hack||   &fFly Hack" to close then run [do [execute console command "/__mp__tempban__ %arg-1% %player% 30 %arg-2%"]->[execute console command "/__mp__ibm__ %player% %arg-1% 30 days"]]
+					format slot 41 of player with rose red named "&a&lSeverity 3" with lore "&fPast Offences: &e%{mineplex.punish.past.tempban.%arg-1%}%||&fBan Duration: &e30.0 Days||||&7Hacks:||   &fFly Hack||||&c&lWARNING:||&cUse Severity 2 for Forum/Staff Reports" to close then run [do [execute console command "/__mp__tempban__ %arg-1% %player% 30 %arg-2%"]->[execute console command "/__mp__ibm__ %player% %arg-1% 30 days"]]
+					format slot 25 of player with paper named "&a&lWarning" with lore "&fPast Offences: &e%{mineplex.punish.past.warn.%arg-1%}%||||&7Example Warning Input:||&f   Spam - Repeatedly writing MEOW||&f   Swearing - Saying 'fuck' and 'shit'||&f   Hack Accusation - Accused Tomp13 of hacking||&f   Trolling - was trying to make bob angry in chat" to close then run [execute console command "/__mp__warn__ %arg-1% %player% %arg-2%"]
+					format slot 34 of player with redstone block named "&a&lPermanent Ban" with lore "&fPast Offences: &e%{mineplex.punish.past.permban.%arg-1%}%||&fBan Duration: &ePermanent||||&2Must supply a detailed reason for Ban." to close then run [do [execute console command "/__mp__ban__ %arg-1% %player% %arg-2%"]->[execute console command "/__mp__ibm__ %player% %arg-1% Permanent"]]
+					format slot 26 of player with enchanted book named "&a&lPermanent Report Ban" with lore "&fPast Offences: &e%{mineplex.punish.past.reportban.%arg-1%}%||&fReport Ban Duration: &ePermanent||||&7Abusing Report Feature||   &r/report SomeUser THE STAFF HERE SUCK||   &r/report SomeUser MINEPLEX IS A F****** PIECE OF S***" to close then run [do [execute console command "/__mp__rban__ %arg-1% %player% %arg-2%"]->[execute console command "/__mp__irbm__ %player% %arg-1% Permanent"]]
+					format slot 43 of player with book and quill named "&a&lPermanent Mute" with lore "&fPast Offences: &e%{mineplex.punish.past.permmute.%arg-1%}%||&fMute Duration: &ePermanent||||&7Severe Advertising:||&f   'JOIN MINECADE! THIS SUCKS!||&f   'join crap.server.net! FREE ADMIN!||||&2Must supply a detailed reason for Mute." to close then run [do [execute console command "/__mp__mute__ %arg-1% %player% %arg-2%"]->[execute console command "/__mp__imm__ %player% %arg-1% Permanent"]]
 					if {banned::%arg-1%} is true:
 						if {banned::%arg-1%::type} is "perm":
-							format slot 45 of player with hopper named "&a&lCurrent Ban" with lore "&fBan Type: &ePermanent|| ||&fBan Reason: &e%{banned::%arg-1%::reason}%" to be unstealable
+							format slot 45 of player with shiny redstone block named "&a&lPermanent Ban" with lore "&ePunishment Type: &fOther|| ||&eReason: &f%{banned::%arg-1%::reason}%|| ||&eStaff: &f%{banned::%arg-1%::staff}%|| ||&eDate: &f%{banned::%arg-1%::when}%" to close then run [do [execute console command "/__mp__unban__ %arg-1%"]->[execute console command "/__mp__iubm__ %player% %arg-1%"]]
+						else if {banned::%arg-1%::type} is "report":
+							format slot 45 of player with enchanted book named "&a&lPermanent Report Ban" with lore "&ePunishment Type: &fReport Ban|| ||&eReason: &f%{banned::%arg-1%::reason}%|| ||&eStaff: &f%{banned::%arg-1%::staff}%|| ||&eDate: &f%{banned::%arg-1%::when}%" to close then run [do [execute console command "/__mp__unban__ %arg-1%"]->[execute console command "/__mp__iubm__ %player% %arg-1%"]]
 						else:
-							format slot 45 of player with hopper block named "&a&lCurrent Ban" with lore "&fBan Type: &eTemporary||&fBan Length: &e%{banned::%arg-1%::time}%|| ||&fBan Reason: &e%{banned::%arg-1%::reason}%" to be unstealable
+							format slot 45 of player with shiny iron sword named "&a&lClient" with lore "&ePunishment Type: &fClient Offence|| ||&eReason: &f%{banned::%arg-1%::reason}%|| ||&eStaff: &f%{banned::%arg-1%::staff}%|| ||&eDate: &f%{banned::%arg-1%::when}%" to close then run [do [execute console command "/__mp__unban__ %arg-1%"]->[execute console command "/__mp__iubm__ %player% %arg-1%"]]
 					if {muted::%arg-1%} is true:
 						if {muted::%arg-1%::type} is "perm":
-							format slot 46 of player with book and quill named "&a&lCurrent Mute" with lore "&fMute Type: &ePermanent|| ||&fMute Reason: &e%{muted::%arg-1%::reason}%||&fIssued By: &e%{muted::%arg-1%::by}%" to be unstealable
+							format slot 46 of player with shiny book and quill named "&a&lPermanent Mute" with lore "&ePunishment Type: &fOther|| ||&eReason: &f%{muted::%arg-1%::reason}%|| ||&eStaff: &f%{muted::%arg-1%::by}%|| ||&eDate: &f%{muted::%arg-1%::when}%" to close then run [do [execute console command "/__mp__iumm__ %player% %arg-1%"]->[execute console command "/__mp__unmute__ %arg-1%"]]
 						else:
-							format slot 46 of player with book and quill named "&a&lCurrent Mute" with lore "&fMute Type: &eTemporary||&fMute Length: &e%{muted::%arg-1%::time}%|| ||&fMute Reason: &e%{muted::%arg-1%::reason}%||&fIssued By: &e%{muted::%arg-1%::by}%" to be unstealable
+							format slot 46 of player with shiny book and quill named "&a&lChat Offence" with lore "&ePunishment Type: &fChatOffense|| ||&eReason: &f%{muted::%arg-1%::reason}%|| ||&eStaff: &f%{muted::%arg-1%::by}%|| ||&eDate: &f%{muted::%arg-1%::when}%" to close then run [do [execute console command "/__mp__iumm__ %player% %arg-1%"]->[execute console command "/__mp__unmute__ %arg-1%"]]
 				else if player has permission "mineplex.mod":
-					open chest with 6 rows named "                 Punish" to player
 					wait 2 ticks
 					format slot 4 of player with arg-1's skull named "&a&l%arg-1%" with lore "&7&lReason: &7%arg-2%" to be unstealable
 					format slot 10 of player with book and quill named "&a&lChat Offense" with lore "&7Verbal Abuse, Spam, Harrassment, Trolling, etc" to be unstealable
-					format slot 19 of player with cactus green named "&a&lSeverity 1" with lore "&fMute Duration: &e10.0 Hours||||&7Light Spam||&f   Sending the same message 2-5 times||||&7Light Advertising||&f   'anyone want to play on minecade?'||||&7Light Abuse/Harassment||&f   'you suck at this game'||||&7Hackusations||&f   'you're such a hacker!'||||&7Trolling||||&2Give Warning if 0 Past Offences and 0 Warnings." to close then run [do [execute console command "/__mp__htempmute__ %arg-1% 10 %player% %arg-2%"]->[execute console command "/__mp__imm__ %player% %arg-1% 10 hours"]]
-					format slot 28 of player with dandelion yellow named "&a&lSeverity 2" with lore "&fMute Duration: &e1.0 Days||||&7Medium Spam||   &fSending the same message 6-20 times||||&7Medium Advertising:||   &f'join crap.server.net' - posted once||||&7Medium Abuse/Harassment||   &f'piss off you stupid newb'||   &f'SHIT ADMINS ARE SHIT!!!'||   &f'you're terrible, learn to play'||||&7Avoiding Chat Filter||   &f'F|_|<K YOU'" to close then run [do [execute console command "/__mp__tempmute__ %arg-1% 1 %player% %arg-2%"]->[execute console command "/__mp__imm__ %player% %arg-1% 1 day"]]
-					format slot 37 of player with rose red named "&a&lSeverity 3" with lore "&fMute Duration: &e30.0 Days||||&7Severe Spam||   &fSending the same message 20+ times||   &fOnly really used for a spam bot||||&7Severe Abuse/Harassment||   &f'go fucking die in a fire you fucking sack of shit'" to close then run [do [execute console command "/__mp__tempmute__ %arg-1% %player% 30 %player% %arg-2%"]->[execute console command "/__mp__imm__ %player% %arg-1% 30 days"]]
+					format slot 19 of player with cactus green named "&a&lSeverity 1" with lore "&fPast Offences: &e%{mineplex.punish.past.tempmute.%arg-1%}%||&fMute Duration: &e10.0 Hours||||&7Light Spam||&f   Sending the same message 2-5 times||||&7Light Advertising||&f   'anyone want to play on minecade?'||||&7Light Abuse/Harassment||&f   'you suck at this game'||||&7Hackusations||&f   'you're such a hacker!'||||&7Trolling||||&2Give Warning if 0 Past Offences and 0 Warnings." to close then run [do [execute console command "/__mp__htempmute__ %arg-1% 10 %player% %arg-2%"]->[execute console command "/__mp__imm__ %player% %arg-1% 10 hours"]]
+					format slot 28 of player with dandelion yellow named "&a&lSeverity 2" with lore "&fPast Offences: &e%{mineplex.punish.past.tempmute.%arg-1%}%||&fMute Duration: &e1.0 Days||||&7Medium Spam||   &fSending the same message 6-20 times||||&7Medium Advertising:||   &f'join crap.server.net' - posted once||||&7Medium Abuse/Harassment||   &f'piss off you stupid newb'||   &f'SHIT ADMINS ARE SHIT!!!'||   &f'you're terrible, learn to play'||||&7Avoiding Chat Filter||   &f'F|_|<K YOU'" to close then run [do [execute console command "/__mp__tempmute__ %arg-1% 1 %player% %arg-2%"]->[execute console command "/__mp__imm__ %player% %arg-1% 1 day"]]
+					format slot 37 of player with rose red named "&a&lSeverity 3" with lore "&fPast Offences: &e%{mineplex.punish.past.tempmute.%arg-1%}%||&fMute Duration: &e30.0 Days||||&7Severe Spam||   &fSending the same message 20+ times||   &fOnly really used for a spam bot||||&7Severe Abuse/Harassment||   &f'go fucking die in a fire you fucking sack of shit'" to close then run [do [execute console command "/__mp__tempmute__ %arg-1% %player% 30 %player% %arg-2%"]->[execute console command "/__mp__imm__ %player% %arg-1% 30 days"]]
 					format slot 12 of player with hopper named "&a&lGeneral Offense" with lore "&7Command/Map/Class/Skill exploits, etc" to be unstealable
-					format slot 21 of player with cactus green named "&a&lSeverity 1" with lore "&fBan Duration: &e4.0 Hours||||&7Team Killing||&f   Intentionally killing your team mates||||&7Trolling (Gameplay)||&f   Using abilities to trap players in spawn||||&7Map/Bug Exploiting||&f   Abusing an exploit to gain an advantage" to close then run [do [execute console command "/__mp__htempban__ %arg-1% %player% 4 %arg-2%"]->[execute console command "/__mp__ibm__ %player% %arg-1% 4 hours"]]
+					format slot 21 of player with cactus green named "&a&lSeverity 1" with lore "&fPast Offences: &e%{mineplex.punish.past.tempban.%arg-1%}%||&fBan Duration: &e4.0 Hours||||&7Team Killing||&f   Intentionally killing your team mates||||&7Trolling (Gameplay)||&f   Using abilities to trap players in spawn||||&7Map/Bug Exploiting||&f   Abusing an exploit to gain an advantage" to close then run [do [execute console command "/__mp__htempban__ %arg-1% %player% 4 %arg-2%"]->[execute console command "/__mp__ibm__ %player% %arg-1% 4 hours"]]
 					format slot 14 of player with iron sword named "&a&lClient Mod" with lore "&7X-ray, Forcefield, Speed, Fly, Inventory Hacks, etc" to be unstealable
-					format slot 23 of player with cactus green named "&a&lSeverity 1" with lore "&fBan Duration: &e1.0 Days||||&7Examples:||&f   Damage Indicators||&f   Player Radar" to close then run [do [execute console command "/__mp__tempban__ %arg-1% %player% 1 %arg-2%"]->[execute console command "/__mp__ibm__ %player% %arg-1% 1 day"]]
-					format slot 32 of player with dandelion yellow named "&a&lSeverity 2" with lore "&fBan Duration: &e30.0 Days||||&7Hacks:||   &fForcefield||   &fSpeed Hack||   &fReach Hack||   &fSpeed Hack||   &fOther Hack||||&7Hack Reports (SR & FR):||   &fForcefield||   &fSpeed Hack||   &fReach Hack||   &fSpeed Hack||   &fOther Hack||   &fFly Hack" to close then run [do [execute console command "/__mp__tempban__ %arg-1% %player% 30 %arg-2%"]->[execute console command "/__mp__ibm__ %player% %arg-1% 30 days"]]
-					format slot 41 of player with rose red named "&a&lSeverity 3" with lore "&fBan Duration: &e30.0 Days||||&7Hacks:||   &fFly Hack||||&c&lWARNING:||&cUse Severity 2 for Forum/Staff Reports" to close then run [do [execute console command "/__mp__tempban__ %arg-1% %player% 30 %arg-2%"]->[execute console command "/__mp__ibm__ %player% %arg-1% 30 days"]]
-					format slot 25 of player with paper named "&a&lWarning" with lore "||&7Example Warning Input:||&f   Spam - Repeatedly writing MEOW||&f   Swearing - Saying 'fuck' and 'shit'||&f   Hack Accusation - Accused Tomp13 of hacking||&f   Trolling - was trying to make bob angry in chat" to close then run [execute console command "/__mp__warn__ %arg-1% %player% %arg-2%"]
-					format slot 34 of player with redstone block named "&a&lPermanent Ban" with lore "&fBan Duration: &ePermanent||||&2Must supply a detailed reason for Ban." to close then run [do [execute console command "/__mp__ban__ %arg-1% %player% %arg-2%"]->[execute console command "/__mp__ibm__ %player% %arg-1% Permanent"]]
-					format slot 43 of player with book and quill named "&a&lPermanent Mute" with lore "&fMute Duration: &ePermanent||||&7Severe Advertising:||&f   'JOIN MINECADE! THIS SUCKS!||&f   'join crap.server.net! FREE ADMIN!||||&2Must supply a detailed reason for Mute." to close then run [do [execute console command "/__mp__mute__ %arg-1% %player% %arg-2%"]->[execute console command "/__mp__imm__ %player% %arg-1% Permanent"]]
+					format slot 23 of player with cactus green named "&a&lSeverity 1" with lore "&fPast Offences: &e%{mineplex.punish.past.tempban.%arg-1%}%||&fBan Duration: &e1.0 Days||||&7Examples:||&f   Damage Indicators||&f   Player Radar" to close then run [do [execute console command "/__mp__tempban__ %arg-1% %player% 1 %arg-2%"]->[execute console command "/__mp__ibm__ %player% %arg-1% 1 day"]]
+					format slot 32 of player with dandelion yellow named "&a&lSeverity 2" with lore "&fPast Offences: &e%{mineplex.punish.past.tempban.%arg-1%}%||&fBan Duration: &e30.0 Days||||&7Hacks:||   &fForcefield||   &fSpeed Hack||   &fReach Hack||   &fSpeed Hack||   &fOther Hack||||&7Hack Reports (SR & FR):||   &fForcefield||   &fSpeed Hack||   &fReach Hack||   &fSpeed Hack||   &fOther Hack||   &fFly Hack" to close then run [do [execute console command "/__mp__tempban__ %arg-1% %player% 30 %arg-2%"]->[execute console command "/__mp__ibm__ %player% %arg-1% 30 days"]]
+					format slot 41 of player with rose red named "&a&lSeverity 3" with lore "&fPast Offences: &e%{mineplex.punish.past.tempban.%arg-1%}%||&fBan Duration: &e30.0 Days||||&7Hacks:||   &fFly Hack||||&c&lWARNING:||&cUse Severity 2 for Forum/Staff Reports" to close then run [do [execute console command "/__mp__tempban__ %arg-1% %player% 30 %arg-2%"]->[execute console command "/__mp__ibm__ %player% %arg-1% 30 days"]]
+					format slot 25 of player with paper named "&a&lWarning" with lore "&fPast Offences: &e%{mineplex.punish.past.warn.%arg-1%}%||||&7Example Warning Input:||&f   Spam - Repeatedly writing MEOW||&f   Swearing - Saying 'fuck' and 'shit'||&f   Hack Accusation - Accused Tomp13 of hacking||&f   Trolling - was trying to make bob angry in chat" to close then run [execute console command "/__mp__warn__ %arg-1% %player% %arg-2%"]
+					format slot 34 of player with redstone block named "&a&lPermanent Ban" with lore "&fPast Offences: &e%{mineplex.punish.past.permban.%arg-1%}%||&fBan Duration: &ePermanent||||&2Must supply a detailed reason for Ban." to close then run [do [execute console command "/__mp__ban__ %arg-1% %player% %arg-2%"]->[execute console command "/__mp__ibm__ %player% %arg-1% Permanent"]]
+					format slot 26 of player with enchanted book named "&a&lPermanent Report Ban" with lore "&fPast Offences: &e%{mineplex.punish.past.reportban.%arg-1%}%||&fReport Ban Duration: &ePermanent||||&7Abusing Report Feature||   &r/report SomeUser THE STAFF HERE SUCK||   &r/report SomeUser MINEPLEX IS A F****** PIECE OF S***" to close then run [do [execute console command "/__mp__rban__ %arg-1% %player% %arg-2%"]->[execute console command "/__mp__irbm__ %player% %arg-1% Permanent"]]
+					format slot 43 of player with book and quill named "&a&lPermanent Mute" with lore "&fPast Offences: &e%{mineplex.punish.past.permmute.%arg-1%}%||&fMute Duration: &ePermanent||||&7Severe Advertising:||&f   'JOIN MINECADE! THIS SUCKS!||&f   'join crap.server.net! FREE ADMIN!||||&2Must supply a detailed reason for Mute." to close then run [do [execute console command "/__mp__mute__ %arg-1% %player% %arg-2%"]->[execute console command "/__mp__imm__ %player% %arg-1% Permanent"]]
 					if {banned::%arg-1%} is true:
 						if {banned::%arg-1%::type} is "perm":
-							format slot 45 of player with hopper named "&a&lCurrent Ban" with lore "&fBan Type: &ePermanent|| ||&fBan Reason: &e%{banned::%arg-1%::reason}%" to be unstealable
+							format slot 45 of player with shiny redstone block named "&a&lPermanent Ban" with lore "&ePunishment Type: &fOther|| ||&eReason: &f%{banned::%arg-1%::reason}%|| ||&eStaff: &f%{banned::%arg-1%::staff}%|| ||&eDate: &f%{banned::%arg-1%::when}%" to be unstealable
+						else if {banned::%arg-1%::type} is "report":
+							format slot 45 of player with enchanted book named "&a&lPermanent Report Ban" with lore "&ePunishment Type: &fReport Ban|| ||&eReason: &f%{banned::%arg-1%::reason}%|| ||&eStaff: &f%{banned::%arg-1%::staff}%|| ||&eDate: &f%{banned::%arg-1%::when}%" to be unstealable
 						else:
-							format slot 45 of player with hopper block named "&a&lCurrent Ban" with lore "&fBan Type: &eTemporary||&fBan Length: &e%{banned::%arg-1%::time}%|| ||&fBan Reason: &e%{banned::%arg-1%::reason}%" to be unstealable
+							format slot 45 of player with shiny iron sword named "&a&lCurrent Ban" with lore "&fBan Type: &eTemporary||&fBan Length: &e%{banned::%arg-1%::time}%|| ||&fBan Reason: &e%{banned::%arg-1%::reason}%" to be unstealable
 					if {muted::%arg-1%} is true:
 						if {muted::%arg-1%::type} is "perm":
-							format slot 46 of player with book and quill named "&a&lCurrent Mute" with lore "&fMute Type: &ePermanent|| ||&fMute Reason: &e%{muted::%arg-1%::reason}%||&fIssued By: &e%{muted::%arg-1%::by}%" to be unstealable
+							format slot 46 of player with shiny book and quill named "&a&lPermanent Mute" with lore "&ePunishment Type: &fOther|| ||&eReason: &f%{muted::%arg-1%::reason}%|| ||&eStaff: &f%{muted::%arg-1%::by}%|| ||&eDate: &f%{muted::%arg-1%::when}%" to be unstealable
 						else:
-							format slot 46 of player with book and quill named "&a&lCurrent Mute" with lore "&fMute Type: &eTemporary||&fMute Length: &e%{muted::%arg-1%::time}%|| ||&fMute Reason: &e%{muted::%arg-1%::reason}%||&fIssued By: &e%{muted::%arg-1%::by}%" to be unstealable
+							format slot 46 of player with shiny book and quill named "&a&lChat Offence" with lore "&ePunishment Type: &fChatOffense|| ||&eReason: &f%{muted::%arg-1%::reason}%|| ||&eStaff: &f%{muted::%arg-1%::by}%|| ||&eDate: &f%{muted::%arg-1%::when}%" to be unstealable
 				else:
-					open chest with 6 rows named "                 Punish" to player
 					wait 2 ticks
 					format slot 4 of player with arg-1's skull named "&a&l%arg-1%" with lore "&7&lReason: &7%arg-2%" to be unstealable
 					format slot 10 of player with book and quill named "&a&lChat Offense" with lore "&7Verbal Abuse, Spam, Harrassment, Trolling, etc" to be unstealable
@@ -1686,6 +2844,7 @@ command /__mp__warn__ <player> <player> <text>:
 				set {_p} to arg-2
 			send "&9Punish> &7%{_p}% issued a friendly warning to %arg-1%." to arg-1
 			send "&9Punish> &7&lReason: &7%arg-3%" to arg-1
+			add 1 to {mineplex.punish.past.warn.%arg-1%}
 			loop all players:
 				if loop-player has permission "mineplex.trainee":
 					send "&9Punish> &7%{_p}% issued a friendly warning to %arg-1%." to loop-player
@@ -1702,6 +2861,19 @@ command /__mp__ibm__ <text> <text> <text>:
 		loop all players:
 			if loop-player has permission "mineplex.trainee":
 				send "&9Punish> &7%{_p}% banned %arg-2% for %arg-3%." to loop-player
+
+command /__mp__irbm__ <text> <text> <text>:
+	trigger:
+		if executor is player:
+			send "Unknown command. Type ""help"" for help."
+			stop
+		if {mineplex.disguise.%arg-1%} is set:
+			set {_p} to {mineplex.disguise.%arg-1%}
+		else:
+			set {_p} to arg-1
+		loop all players:
+			if loop-player has permission "mineplex.trainee":
+				send "&9Punish> &7%{_p}% report banned %arg-2% for %arg-3%." to loop-player
 
 command /__mp__imm__ <text> <text> <text>:
 	trigger:
@@ -1754,6 +2926,32 @@ command /__mp__unban__ [<text>]:
 		delete {banned::%{_player}%::*}
 		message "&4* &cYou have unbanned %{_player}%"
 
+command /__mp__rban__ [<text>] [<text>] [<text>]:
+	trigger:
+		if executor is player:
+			send "Unknown command. Type ""help"" for help."
+			stop
+		if player does not have permission "ban.people":
+			message "&4* &cYou do not have permission to ban people."
+			stop
+		if arg 1 is not set:
+			message "&4* &cUnspecified player. &7Try &f/ban [player] [reason]&7."
+			stop
+		if arg 2 is not set:
+			message "&4* &cUnspecified time. &7Try &f/ban %arg 1% [reason]&7."
+			stop
+			
+		set {_player} to arg 1 parsed as offlineplayer
+
+		set {banned::%{_player}%} to true
+		set {banned::%{_player}%::type} to "report"
+		set {banned::%{_player}%::reason} to arg 3
+		set {banned::%{_player}%::staff} to arg 2
+		set {banned::%{_player}%::when} to now
+		add 1 to {mineplex.punish.past.reportban.%{_player}%}
+		
+		kick {_player} due to "&c&lYou are banned for Permanent by %arg-2%%nl%&f%{banned::%{_player}%::reason}%%nl%&2Unfairly banned? Appeal at &a%{mineplex.config.appealwebsite}%"
+
 command /__mp__ban__ [<text>] [<text>] [<text>]:
 	trigger:
 		if executor is player:
@@ -1774,6 +2972,9 @@ command /__mp__ban__ [<text>] [<text>] [<text>]:
 		set {banned::%{_player}%} to true
 		set {banned::%{_player}%::type} to "perm"
 		set {banned::%{_player}%::reason} to arg 3
+		set {banned::%{_player}%::staff} to arg 2
+		set {banned::%{_player}%::when} to now
+		add 1 to {mineplex.punish.past.permban.%{_player}%}
 		
 		kick {_player} due to "&c&lYou are banned for Permanent by %arg-2%%nl%&f%{banned::%{_player}%::reason}%%nl%&2Unfairly banned? Appeal at &a%{mineplex.config.appealwebsite}%"
 		
@@ -1805,7 +3006,9 @@ command /__mp__tempban__ [<text>] [<text>] [<text>] [<text>]:
 		set {banned::%{_player}%::type} to "temp"
 		set {banned::%{_player}%::reason} to arg 4
 		set {banned::%{_player}%::time} to {_duration}
+		set {banned::%{_player}%::staff} to arg 2
 		set {banned::%{_player}%::when} to now
+		add 1 to {mineplex.punish.past.tempban.%{_player}%}
 		
 		kick {_player} due to "&c&lYou are banned for %{banned::%{_player}%::time}% by %arg-2%%nl%&f%{banned::%{_player}%::reason}%%nl%&2Unfairly banned? Appeal at &a%{mineplex.config.appealwebsite}%"
 
@@ -1837,6 +3040,7 @@ command /__mp__htempban__ [<text>] [<text>] [<text>] [<text>]:
 		set {banned::%{_player}%::reason} to arg 4
 		set {banned::%{_player}%::time} to {_duration}
 		set {banned::%{_player}%::when} to now
+		add 1 to {mineplex.punish.past.tempban.%{_player}%}
 		
 		kick {_player} due to "&c&lYou are banned for %{banned::%{_player}%::time}% by %arg-2%%nl%&f%{banned::%{_player}%::reason}%%nl%&2Unfairly banned? Appeal at &a%{mineplex.config.appealwebsite}%"
 
@@ -1865,6 +3069,7 @@ command /__mp__tempmute__ [<text>] [<text>] [<text>] [<text>]:
 		set {muted::%{_player}%::time} to {_duration}
 		set {muted::%{_player}%::when} to now
 		set {muted::%{_player}%::by} to arg 3
+		add 1 to {mineplex.punish.past.tempmute.%{_player}%}
 
 		send "&9Punish> &7&lReason: &r&7%arg-4%" to {_player}
 		send "&9Punish> &7%{muted::%{_player}%::by}% muted %arg-1% for %{muted::%{_player}%::time}%." to {_player}
@@ -1894,6 +3099,7 @@ command /__mp__htempmute__ [<text>] [<text>] [<text>] [<text>]:
 		set {muted::%{_player}%::time} to {_duration}
 		set {muted::%{_player}%::when} to now
 		set {muted::%{_player}%::by} to arg 3
+		add 1 to {mineplex.punish.past.tempmute.%{_player}%}
 
 		send "&9Punish> &7&lReason: &r&7%arg-4%" to {_player}
 		send "&9Punish> &7%{muted::%{_player}%::by}% muted %arg-1% for %{muted::%{_player}%::time}%." to {_player}
@@ -1916,6 +3122,7 @@ command /__mp__mute__ [<text>] [<text>] [<text>]:
 		set {muted::%{_player}%::type} to "perm"
 		set {muted::%{_player}%::reason} to arg 3
 		set {muted::%{_player}%::by} to arg 2
+		add 1 to {mineplex.punish.past.permmute.%{_player}%}
 
 		send "&9Punish> &7&lReason: &r&7%arg-3%" to {_player}
 		send "&9Punish> &7%{muted::%{_player}%::by}% muted %arg-1% for Permanent." to {_player}
@@ -1934,6 +3141,54 @@ command /__mp__unmute__ [<text>]:
 
 #Prefs System
 
+function prefsSystem(p: player , t: number) :: number:
+	if {_t} is 1:
+		if {mineplex.pref.hpv.%{_p}%} is true:
+			set {mineplex.pref.hpv.%{_p}%} to false
+			hide all players from {_p}
+		else:
+			set {mineplex.pref.hpv.%{_p}%} to true
+			reveal all players from {_p}
+			loop all players:
+				if {mineplex.vanish.%loop-player%} is true:
+					add loop-player to {%{_p}%.vanishlist::*}
+			loop all players:
+				if loop-player does not have permission "mineplex.admin":
+					hide {%{_p}%.vanishlist::*} from all players
+					delete {%{_p}%.vanishlist::*}
+	else if {_t} is 2:
+		if {mineplex.pref.pc.%{_p}%} is true:
+			set {mineplex.pref.pc.%{_p}%} to false
+		else:
+			set {mineplex.pref.pc.%{_p}%} to true
+	else if {_t} is 3:
+		if {mineplex.pref.pm.%{_p}%} is true:
+			set {mineplex.pref.pm.%{_p}%} to false
+		else:
+			set {mineplex.pref.pm.%{_p}%} to true
+	else if {_t} is 4:
+		if {mineplex.pref.gwen.%{_p}%} is true:
+			set {mineplex.pref.gwen.%{_p}%} to false
+		else:
+			set {mineplex.pref.gwen.%{_p}%} to true
+	else if {_t} is 5:
+		if {mineplex.pref.report.%{_p}%} is true:
+			set {mineplex.pref.report.%{_p}%} to false
+		else:
+			set {mineplex.pref.report.%{_p}%} to true
+	else if {_t} is 6:
+		if {mineplex.pref.ff.%{_p}%} is true:
+			set {mineplex.pref.ff.%{_p}%} to false
+		else:
+			set {mineplex.pref.ff.%{_p}%} to true
+	else if {_t} is 7:
+		if {mineplex.ff.%{_p}%} is true:
+			set {mineplex.ff.%{_p}%} to false
+			delete {mineplex.ff.list::%{_p}%}
+		else:
+			set {mineplex.ff.%{_p}%} to true
+			set {mineplex.ff.list::%{_p}%} to true
+
 command /prefs:
 	trigger:
 		set {_s} to "Steve" parsed as offline player
@@ -1941,54 +3196,87 @@ command /prefs:
 		wait 1 tick
 		format slot 9 of player with fire charge named "&a&mHub Stacker" with lore "&7&mNull" to be unstealable
 		format slot 18 of player with gray dye named "&a&mHub Stacker" with lore "&7&mNull" to be unstealable
-		format slot 11 of player with eye of ender named "&aHub Player Visibility" with lore "&a%{mineplex.pref.hpv.%player%}%|| ||&fClick to Toggle" to close then run [execute player command "/.prefs-system 1"]
-		format slot 20 of player with light green dye named "&aHub Player Visibility" with lore "&a%{mineplex.pref.hpv.%player%}%|| ||&fClick to Toggle" to close then run [execute player command "/.prefs-system 1"]
-		format slot 13 of player with paper named "&aPlayer Chat" with lore "&a%{mineplex.pref.pc.%player%}%|| ||&fClick to Toggle" to close then run [execute player command "/.prefs-system 2"]
-		format slot 22 of player with light green dye named "&aPlayer Chat" with lore "&a%{mineplex.pref.pc.%player%}%|| ||&fClick to Toggle" to close then run [execute player command "/.prefs-system 2"]
-		format slot 15 of player with empty map named "&aPrivate Messaging" with lore "&a%{mineplex.pref.pm.%player%}%|| ||&fClick to Toggle" to close then run [execute player command "/.prefs-system 3"]
-		format slot 24 of player with light green dye named "&aPrivate Messaging" with lore "&a%{mineplex.pref.pm.%player%}%|| ||&fClick to Toggle" to close then run [execute player command "/.prefs-system 3"]
+		format slot 11 of player with eye of ender named "&aHub Player Visibility" with lore "&a%{mineplex.pref.hpv.%player%}%|| ||&fClick to Toggle" to close then run [prefsSystem(player, 1)]
+		format slot 20 of player with light green dye named "&aHub Player Visibility" with lore "&a%{mineplex.pref.hpv.%player%}%|| ||&fClick to Toggle" to close then run [prefsSystem(player, 1)]
+		format slot 13 of player with paper named "&aPlayer Chat" with lore "&a%{mineplex.pref.pc.%player%}%|| ||&fClick to Toggle" to close then run [prefsSystem(player, 2)]
+		format slot 22 of player with light green dye named "&aPlayer Chat" with lore "&a%{mineplex.pref.pc.%player%}%|| ||&fClick to Toggle" to close then run [prefsSystem(player, 2)]
+		format slot 15 of player with empty map named "&aPrivate Messaging" with lore "&a%{mineplex.pref.pm.%player%}%|| ||&fClick to Toggle" to close then run [prefsSystem(player, 3)]
+		format slot 24 of player with light green dye named "&aPrivate Messaging" with lore "&a%{mineplex.pref.pm.%player%}%|| ||&fClick to Toggle" to close then run [prefsSystem(player, 3)]
 		format slot 17 of player with player's skull named "&a&mHub Party Requests" with lore "&7&mNull" to be unstealable
 		format slot 26 of player with gray dye named "&a&mHub Party Requests" with lore "&7&mNull" to be unstealable
 		format slot 40 of player with red flower named "&a&mShow Pending Friend Requests" with lore "&7&mNull" to be unstealable
 		format slot 49 of player with gray dye named "&a&mShow Pending Friend Requests" with lore "&7&mNull" to be unstealable
 		if player has permission "mineplex.trainee":
-			format slot 42 of player with paper named "&aGWEN Reports" with lore "&a%{mineplex.pref.gwen.%player%}%" to close then run [execute player command "/.prefs-system 4"]
-			format slot 51 of player with gray dye named "&aGWEN Reports" with lore "&a%{mineplex.pref.gwen.%player%}%" to close then run [execute player command "/.prefs-system 4"]
-		
-
-command /.prefs-system [<integer>]:
-	trigger:
-		if arg 1 is 1:
-			if {mineplex.pref.hpv.%player%} is true:
-				set {mineplex.pref.hpv.%player%} to false
-				hide all players from player
-			else:
-				set {mineplex.pref.hpv.%player%} to true
-				reveal all players from player
-				loop all players:
-					if {mineplex.vanish.%loop-player%} is true:
-						add loop-player to {%player%.vanishlist::*}
-				loop all players:
-					if loop-player does not have permission "mineplex.admin":
-						hide {%player%.vanishlist::*} from all players
-						delete {%player%.vanishlist::*}
-		else if arg 1 is 2:
-			if {mineplex.pref.pc.%player%} is true:
-				set {mineplex.pref.pc.%player%} to false
-			else:
-				set {mineplex.pref.pc.%player%} to true
-		else if arg 1 is 3:
-			if {mineplex.pref.pm.%player%} is true:
-				set {mineplex.pref.pm.%player%} to false
-			else:
-				set {mineplex.pref.pm.%player%} to true
-		else if arg 1 is 4:
-			if {mineplex.pref.gwen.%player%} is true:
-				set {mineplex.pref.gwen.%player%} to false
-			else:
-				set {mineplex.pref.gwen.%player%} to true
+			format slot 42 of player with paper named "&aGWEN Reports" with lore "&a%{mineplex.pref.gwen.%player%}%" to close then run [prefsSystem(player, 4)]
+			format slot 51 of player with light green dye named "&aGWEN Reports" with lore "&a%{mineplex.pref.gwen.%player%}%" to close then run [prefsSystem(player, 4)]
+			format slot 44 of player with saddle named "&aHub Ignore Velocity" with lore "&a%{mineplex.pref.ff.%player%}%" to close then run [prefsSystem(player, 6)]
+			format slot 53 of player with light green dye named "&aHub Ignore Velocity" with lore "&a%{mineplex.pref.ff.%player%}%" to close then run [prefsSystem(player, 6)]
+			format slot 36 of player with book named "&aUser Reports" with lore "&a%{mineplex.pref.report.%player%}%" to close then run [prefsSystem(player, 5)]
+			format slot 45 of player with light green dye named "&aUser Reports" with lore "&a%{mineplex.pref.report.%player%}%" to close then run [prefsSystem(player, 5)]
+			format slot 38 of player with slimeball named "&aHub Forcefield" with lore "&a%{mineplex.ff.%player%}%" to close then run [prefsSystem(player, 7)]
+			format slot 47 of player with light green dye named "&aHub Forcefield" with lore "&a%{mineplex.ff.%player%}%" to close then run [prefsSystem(player, 7)]
+		if player has permission "mineplex.youtube":
+			format slot 44 of player with saddle named "&aHub Ignore Velocity" with lore "&a%{mineplex.pref.ff.%player%}%" to close then run [prefsSystem(player, 6)]
+			format slot 53 of player with light green dye named "&aHub Ignore Velocity" with lore "&a%{mineplex.pref.ff.%player%}%" to close then run [prefsSystem(player, 6)]
+			format slot 38 of player with slimeball named "&aHub Forcefield" with lore "&a%{mineplex.ff.%player%}%" to close then run [prefsSystem(player, 7)]
+			format slot 47 of player with light green dye named "&aHub Forcefield" with lore "&a%{mineplex.ff.%player%}%" to close then run [prefsSystem(player, 7)]
+		if player has permission "mineplex.twitch":
+			format slot 44 of player with saddle named "&aHub Ignore Velocity" with lore "&a%{mineplex.pref.ff.%player%}%" to close then run [prefsSystem(player, 6)]
+			format slot 53 of player with light green dye named "&aHub Ignore Velocity" with lore "&a%{mineplex.pref.ff.%player%}%" to close then run [prefsSystem(player, 6)]
+			format slot 38 of player with slimeball named "&aHub Forcefield" with lore "&a%{mineplex.ff.%player%}%" to close then run [prefsSystem(player, 7)]
+			format slot 47 of player with light green dye named "&aHub Forcefield" with lore "&a%{mineplex.ff.%player%}%" to close then run [prefsSystem(player, 7)]
 
 #GWEN CODING! (Using my old plugin Shield) (I took it down as I was ripping off json.sk but wtevr)
+on damage:
+	if "%Victim's name%" is "BeamCow" or "BeamGuar":
+		cancel event
+on death:
+	if "%Victim's name%" is "BeamCow" or "BeamGuar":
+		clear drops
+
+on quit:
+	delete {forcefield.past.%player%}
+
+function beamGo(p: player) :: number:
+	apply slowness 255 to {_p} for 7 seconds
+	set {_p2} to location 3 blocks in front of {_p}
+	add 5 to y-coordinate of {_p2}
+	set {_p3} to location 3 blocks behind {_p}
+	add 5 to y-coordinate of {_p3}
+	set {_p4} to location 3 blocks left of {_p}
+	add 5 to y-coordinate of {_p4}
+	set {_p5} to location 3 blocks right of {_p}
+	add 5 to y-coordinate of {_p5}
+	spawn a guardian at {_p2}
+	add "{CustomName:""BeamCow"", NoGravity:1, Silent:1}" to nbt of last spawned entity
+	set {_t2} to last spawned entity
+	spawn a guardian at {_p3}
+	add "{CustomName:""BeamCow"", NoGravity:1, Silent:1}" to nbt of last spawned entity
+	set {_t3} to last spawned entity
+	spawn a guardian at {_p4}
+	add "{CustomName:""BeamCow"", NoGravity:1, Silent:1}" to nbt of last spawned entity
+	set {_t4} to last spawned entity
+	spawn a guardian at {_p5}
+	add "{CustomName:""BeamCow"", NoGravity:1, Silent:1}" to nbt of last spawned entity
+	set {_t5} to last spawned entity
+	set {_player} to {_p}
+	set {_r} to randomize "abcdefgh123456789!@##$+"
+	set {banned::%{_player}%} to true
+	set {banned::%{_player}%::type} to "perm"
+	set {banned::%{_player}%::reason} to "[GWEN] %{_r}%"
+	Beam({_p}, {_t2})
+	Beam({_p}, {_t3})
+	Beam({_p}, {_t4})
+	Beam({_p}, {_t5})
+	wait 5.2 seconds
+	broadcast "&9GWEN> &7%{_p}% has been banned. I am always watching"
+	kick {_player} due to "&c&lYou are banned for Permanent by Mineplex Anti-Cheat%nl%&f[GWEN] nf2o3hr274fd2%nl%&2Unfairly banned? Appeal at &a%{mineplex.config.appealwebsite}%"
+
+command /gwenban <player>:
+	permission: mineplex.admin
+	permission message: &9Permissions> &7This requires Permission Rank [&9ADMIN&7].
+	trigger:
+		beamGo(arg-1)
 
 on shoot:
 	if {shield.toggle.fbow} is false:
@@ -2009,10 +3297,36 @@ on damage:
 		cancel event
 		add 1 to {forcefield.%attacker%}
 		if {forcefield.%attacker%} > 5:
-			gwenAlert((attacker), ("Forcefield"))
-			clear {forcefield.%attacker%}
-		wait 3 seconds
-		reduce {forcefield.%attacker%} by 1
+			if {forcefield.past.%attacker%	} is not set:
+				set {forcefield.past.%attacker%} to 1
+				gwenAlert((attacker), ("Forcefield"))
+				wait 3 seconds
+				reduce {forcefield.%attacker%} by 1
+				stop
+			else if {forcefield.past.%attacker%} is 1:
+				gwenAlert((attacker), ("§aForcefield"))
+				add 1 to {forcefield.past.%attacker%}
+				wait 3 seconds
+				reduce {forcefield.%attacker%} by 1
+				stop
+			else if {forcefield.past.%attacker%} is 2:
+				gwenAlert((attacker), ("§eForcefield"))
+				add 1 to {forcefield.past.%attacker%}
+				wait 3 seconds
+				reduce {forcefield.%attacker%} by 1
+				stop
+			else if {forcefield.past.%attacker%} is 3:
+				gwenAlert((attacker), ("§cForcefield"))
+				add 1 to {forcefield.past.%attacker%}
+				wait 3 seconds
+				reduce {forcefield.%attacker%} by 1
+				stop
+			else if {forcefield.past.%attacker%} is 4:
+				gwenAlert((attacker), ("§4Forcefield"))
+				add 1 to {forcefield.past.%attacker%}
+				wait 3 seconds
+				reduce {forcefield.%attacker%} by 1
+				stop
 
 every 4 second :
 	set {autoclick.check} to true
@@ -2027,8 +3341,8 @@ on left click :
 	else:
 		{autoclick.check} is true
 		add 1 to {player.click.%player%}
-		{player.click.%player%} > 15
-		gwenAlert((player), ("High CPS (%{player.click.%player%} / 3% cps)"))
+		{player.click.%player%} > 69
+		gwenAlert((player), ("High CPS (%{player.click.%player%} / 3% cpsps)"))
 
 on damage of a player :
 	if {shield.toggle.akb} is false:
@@ -2052,10 +3366,19 @@ on tab completer for "/mineplex-core":
 	add "help" to completions
 	add "useChat" to completions
 	add "setAdmin" to completions
+	add "chestPoint" to completions
+	add "chestPointSub" to completions
 	add "titleOnJoin" to completions
 	add "reload" to completions
 	add "useScoreboard" to completions
+	add "spawnCarl" to completions
 	add "%player%" to completions
+
+on tab completer for "/tp":
+	add "here" to completions
+	add "all" to completions
+	loop all players:
+		add "%loop-player%" to completions
 
 on tab completer for "/give":
 	if player has permission "mineplex.admin":
@@ -2064,6 +3387,51 @@ on tab completer for "/give":
 		loop all players:
 			add "%loop-player%" to completions
 		add "ALL" to completions
+
+#MPS
+
+command /hostserver:
+	permission: mineplex.op
+	trigger:
+		if {mineplex.mps.%player%} is not set:
+			send "&9Personal Server Manager> &7%player%-1 successfully created. You will be sent to it shortly."
+			send "&9Personal Server Manager> &7If you haven't been connected in 20 seconds, type /server %player%-1."
+			create folder "./mps/%player%-1"
+			load world "./mps/%player%-1"
+			wait 20 seconds
+			skellett teleport player to world "./mps/%player%-1"
+		else:
+			send "&9Personal Server Manager> &7Your server is still being created or already exists. If you haven't been connected in 20 seconds, type /server %player%-1."
+
+command /endserver:
+	trigger:
+		loop all players:
+			loop-player's world is "./mps/%player%-1":
+				skellett teleport loop-player to world "world"
+		unload world "./mps/%player%-1"
+		wait 2 seconds
+		delete folder "./mps/%player%-1/data/"
+		delete folder "./mps/%player%-1/region/"
+		delete file "./mps/%player%-1/level.dat"
+		delete file "./mps/%player%-1/uid.dat"
+		delete file "./mps/%player%-1/session.lock"
+		delete dir "./mps/%player%-1"
+
+command /tpwrd <text>:
+	trigger:
+		skellett teleport player to world "%arg-1%"
+
+command /menu:
+	trigger:
+		open chest with 3 rows named "Private Server Menu" to player
+		wait 1 tick
+		format slot 11 of player with diamond sword named "&a&lGive Co-Host" with lore "||&e" to close then run [execute console command "say no way hosay"]
+		format slot 13 of player with lava bucket named "&aRemove Player" with lore "||&e" to close then run [execute console command "kick Citrin_ lol"]
+		format slot 15 of player with redstone comparator item named "&aGame Options" with lore "||&e" to close then run [execute console command "say xd"]
+		format slot 20 of player with golden sword named "&a&lRemove Co-Host" with lore "||&e" to close then run [execute console command "say no way hosay"]
+		format slot 22 of player with water bucket named "&a&lUn-Remove Player" with lore "||&e" to close then run [execute console command "say no way hosay"]
+		format slot 24 of player with tnt named "&a&lKill Private Server" with lore "||&7Shift-Right Click to Kill Private Server" to close then run [execute console command "say xd"]
+
 
 #skPerms by LimeGlass
 #Thanks for Letting Me Bake This In!
