@@ -2763,14 +2763,15 @@ command /message [<player>] [<text>]:
 
 command /ping:
 	trigger:
+		send "&9Ping> &7PONG!"
+		
+command /me:
+	trigger:
 		if arg 1 is not set:
 			send "&cUsage: /me <action...>"
 		else:
 			send "&9Chat> &7Nope, not allowed!"
 		
-command /me:
-	trigger:
-		send "&9Ping> &7PONG!"
 
 command /news [<string>] [<string>] [<string>]:
 	permission: mineplex.admin
