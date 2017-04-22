@@ -2752,6 +2752,9 @@ command /message [<player>] [<text>]:
 				if {mineplex.pref.pm.%arg-1%} is false:
 					send "&d%arg-1% has private messaging disabled."
 					stop
+				if {mineplex.rank.%arg-1%} is "&4&lDEV ":
+					send "&d%arg-1% is often AFK or minimized, due to plugin developement."
+					send "&dPlease be patient if they do not reply instantly."
 				send "&6&l%{_p}% > %arg-1% &e&l%arg-2%"
 				send "&6&l%{_p}% > %arg-1% &e&l%arg-2%" to arg-1
 				set {mineplex.lastm.%player%} to "%arg-1%" parsed as player
