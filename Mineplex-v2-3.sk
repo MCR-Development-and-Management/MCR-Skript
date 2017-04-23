@@ -3960,6 +3960,50 @@ on shoot:
 		if projectile is an arrow:
 			if difference between {bow.%shooter%} and now is less than 2 ticks:
 				gwenAlert((shooter), ("Fast Bow"))
+				
+every 1.5 second:
+	if {shield.toggle.fly} is false:
+		stop
+	else:
+		loop all players:
+			loop-player's gamemode is not creative
+			loop-player is not flying
+			set {_block} to the block below loop-player
+			while {_block} is air :
+				set {_block} to the block below {_block}
+				add 1 to {_altitude}
+			wait 1 second
+			set {_block} to the block below loop-player
+			while {_block} is air :
+				set {_block} to the block below {_block}
+				add 1 to {_altitude2}
+			set {_y} to y-coordinate of location of loop-player
+			set {_y} to rounded down {_y} 
+			set {_loc1} to block north east loop-player
+			set {_loc2} to block south west below loop-player
+			loop blocks within {_loc1} to {_loc2}: 
+				if loop-block is not air:
+					set {_y2} to y-coordinate of location of loop-block
+					set {_y2} to rounded down {_y2}
+					if {_y2} = {_y}: 
+						add 1 to {_wall}
+					else:
+						add 1 to {_edge}
+			if {_altitude2} >= {_altitude}:
+				{_altitude} > 2
+				{jump.%loop-player%} is false
+				if {_edge} is not set :
+					gwenAlert((attacker), ("Fly (Raise)"))
+				if {_edge} < 3 :
+					{_wall} > 0
+					gwenAlert((attacker), ("Fly (Raise)"))
+			delete {_edge}
+			delete {_wall}
+on jump:
+	set {jump.%player%} to true
+	wait 5 ticks
+	set {jump.%player%} to false
+	
 
 on damage:
 	if {shield.toggle.ff} is false:
