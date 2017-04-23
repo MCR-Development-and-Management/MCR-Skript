@@ -166,7 +166,7 @@ function gwenAlert(p: player , r: text) :: number:
 	loop all players:
 		if loop-player has permission "mineplex.trainee":
 			if {mineplex.pref.gwen.%loop-player%} is true:
-				send "&b&kK&r &c&lGWEN > &6%{_player}% &esuspected of &a%{_r}%&e." to loop-player
+				send "&b&kK&r &c&lGWEN > &6%{_player}% &esuspected of &a%{_r}%&e in &b%loop-player's world%." to loop-player
 
 #Config Loading
 
