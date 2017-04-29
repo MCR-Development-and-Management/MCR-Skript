@@ -1848,7 +1848,7 @@ command /mcr:
 		send "&9Plugin> &7Mineplex Core"
 		send "&9Plugin> &7Running MCR: &e{@MCRVER}"
 		send "&9Plugin> &7Hotfix/Release Cycle: &e{@MCRHOTFIX}"
-		send "&9Plugin> &7by WheezyGold7931, LimeGlass, Citrin_, HappyLuigi, and Torksi"
+		send "&9Plugin> &7by WheezyGold7931, LimeGlass, Citrin_, Torksi, HappyLuigi, and Ottelino"
 		send ""
 		send "&9Patreon> &7Huge Thanks to my Patreons:"
 		send "&9Patreon> &eCitrin_"
