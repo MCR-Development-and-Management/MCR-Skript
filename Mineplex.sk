@@ -108,9 +108,9 @@ function updateRankAPI(p: player) :: player:
 		set {_br} to uncolored {mineplex.rank.%{_p}%}
 		set {_dr} to uncolored {mineplex.rank.%{mineplex.disguise.%{_p}%}%}
 		if {mineplex.rank.%{mineplex.disguise.%{_p}%}%} is set:
-			make all players see {_p}'s prefix as "%{mineplex.rank.%{mineplex.disguise.%{_p}%}%}%&e"
+			make all players see {_p}'s prefix as "%{mineplex.rank.%{mineplex.disguise.%{_p}%}%}%&f"
 		else:
-			make all players see {_p}'s prefix as "&e"
+			make all players see {_p}'s prefix as "&f"
 		set {_br} to convert string "%{_br}%" to lowercase
 		set {_br} to 1st char in each word of "%{_br}%" to caps
 		set {_dr} to convert string "%{_dr}%" to lowercase
@@ -124,9 +124,9 @@ function updateRankAPI(p: player) :: player:
 	else:
 		set {_br} to uncolored {mineplex.rank.%{_p}%}
 		if {mineplex.rank.%{_p}%} is set:
-			make all players see {_p}'s prefix as "%{mineplex.rank.%{_p}%}%&e"
+			make all players see {_p}'s prefix as "%{mineplex.rank.%{_p}%}%&f"
 		else:
-			make all players see {_p}'s prefix as "&e"
+			make all players see {_p}'s prefix as "&f"
 		set {_br} to convert string "%{_br}%" to lowercase
 		set {_br} to 1st char in each word of "%{_br}%" to caps
 		if {_br} is "":
@@ -144,7 +144,13 @@ function mcs(p: player , m: text) :: number:
 			set {mineplex.rank.%{_player}%} to ""
 		if {mineplex.level.%{_player}%} is not set:
 			set {mineplex.level.%{_player}%} to "&70"
-		replace all " fuck ", " bitch " and " ass " with "****" in {_m}
+		replace all "fuck" with "****" in {_m}
+		replace all "bitch" with "*****" in {_m}
+		replace all "ass" with "***" in {_m}
+		replace all "nigger" with "***" in {_m}
+		replace all "cunt" with "***" in {_m}
+		replace all "f|_|ck" with "******" in {_m}
+		replace all "shit" with "****" in {_m}
 		if {_m} is {mineplex.lastsent.%{_p}%}:
 			send "&9Chat> &7This message is too similar to your previous message." to {_p}
 			return -1
@@ -1091,19 +1097,19 @@ function rankLoad(p: player) :: string:
 		set {mineplex.colora.%{_p}%} to "§6"
 		return "&6Trainee"
 	if {mineplex.rank.%{_p}%} is "&6&lMOD ":
-		execute console command "/updaterank %{_p}% mod"
+		execute console command "/updaterank %{_p}% moderator"
 		set {_p} tab name to "&6&lMOD &e%{_p}%"
 		set {mineplex.displaya.%{_p}%} to "&6Mod"
 		set {mineplex.colora.%{_p}%} to "§6"
 		return "&6Mod"
 	if {mineplex.rank.%{_p}%} is "&6&lSR.MOD ":
-		execute console command "/updaterank %{_p}% srmod"
+		execute console command "/updaterank %{_p}% snr_moderator"
 		set {_p} tab name to "&6&lSR.MOD &e%{_p}%"
 		set {mineplex.displaya.%{_p}%} to "&6Sr.Mod"
 		set {mineplex.colora.%{_p}%} to "§6"
 		return "&6Sr.Mod"
 	if {mineplex.rank.%{_p}%} is "&6&lC.MOD ":
-		execute console command "/updaterank %{_p}% cmod"
+		execute console command "/updaterank %{_p}% clans_moderator"
 		set {_p} tab name to "&6&lC.MOD &e%{_p}%"
 		set {mineplex.displaya.%{_p}%} to "&6C.Mod"
 		set {mineplex.colora.%{_p}%} to "§6"
@@ -1139,12 +1145,12 @@ function rankLoad(p: player) :: string:
 		set {mineplex.colora.%{_p}%} to "§9"
 		return "&9Maplead"
 	if {mineplex.rank.%{_p}%} is "&c&lJR.DEV ":
-		execute console command "/updaterank %{_p}% jrdev"
+		execute console command "/updaterank %{_p}% jnr_developer"
 		set {mineplex.displaya.%{_p}%} to "&cJr.Dev"
 		set {mineplex.colora.%{_p}%} to "§c"
 		return "&cJr.Dev"
 	if {mineplex.rank.%{_p}%} is "&4&lDEV ":
-		execute console command "/updaterank %{_p}% dev"
+		execute console command "/updaterank %{_p}% developer"
 		set {_p} tab name to "&4&lDEV &e%{_p}%"
 		set {mineplex.displaya.%{_p}%} to "&4Dev"
 		set {mineplex.colora.%{_p}%} to "§4"
@@ -1178,11 +1184,11 @@ function rankLoad(p: player) :: string:
 		set {mineplex.displaya.%{_p}%} to "&9Support"
 		set {mineplex.colora.%{_p}%} to "§9"
 		return "&9Support"
-	if {mineplex.rank.%{_p}%} is "&9&lMEDIA ":
-		execute console command "/updaterank %{_p}% media"
-		set {mineplex.displaya.%{_p}%} to "&9Media"
+	if {mineplex.rank.%{_p}%} is "&9&lARTIST ":
+		execute console command "/updaterank %{_p}% artist"
+		set {mineplex.displaya.%{_p}%} to "&9Artist"
 		set {mineplex.colora.%{_p}%} to "§9"
-		return "&9Media"
+		return "&9Artist"
 
 on join:
 	if {mineplex.rank.uuid.%uuid of player%} is set:
@@ -2167,33 +2173,15 @@ command /updaterank [<offline player>] [<string>]:
 	permission: mineplex.admin
 	permission message: &9Permissions> &7This requires Permission Rank [&9ADMIN&7].
 	trigger:
-		if argument 1 or argument 2 is not set:
-			send "&9Client Manager> &7Listing Rank Update Commands:"
-			send "&f/updaterank (player) (rank): &eupdates chosen player's rank to the chosen rank"
-			send ""
-			send "&9Rank Update> &7Listing Rank List:"
-			send "&9Ranks> &7MEMBER"
-			send "&9Ranks> &7ULTRA"
-			send "&9Ranks> &7HERO"
-			send "&9Ranks> &7LEGEND"
-			send "&9Ranks> &7TITAN"
-			send "&9Ranks> &7ETERNAL"
-			send "&9Ranks> &7TRAINEE"
-			send "&9Ranks> &7MOD"
-			send "&9Ranks> &7SRMOD"
-			send "&9Ranks> &7CMOD"
-			send "&9Ranks> &7ADMIN"
-			send "&9Ranks> &7LEADER"
-			send "&9Ranks> &7OWNER"
-			send "&9Ranks> &7BUILDER"
-			send "&9Ranks> &7SUPPORT"
-			send "&9Ranks> &7MEDIA"
-			send "&9Ranks> &7MAPLEAD"
-			send "&9Ranks> &7JRDEV"
-			send "&9Ranks> &7DEV"
-			send "&9Ranks> &7TWITCH"
-			send "&9Ranks> &7YOUTUBE"
-			send "&9Ranks> &7YT"
+		if argument 1 is not set:
+			send "&9Client Manager> &7Player argument missing."
+			stop
+		if argument 2 is not set:
+			send "&9Client Manager> &7/updaterank joeschmo MODERATOR"
+			#
+			# Should probably change joeschmo to WheezyGold7931 :D
+			#
+			stop
 		if argument 2 is "MEMBER":
 			if argument 2 is set:   #These should now no longer mater so lel.
 				set {mineplex.rank.%arg-1%} to ""
@@ -2273,7 +2261,7 @@ command /updaterank [<offline player>] [<string>]:
 				updateRankAPI(arg-1)
 			else:
 				send "&9Message> &cErr...something went wrong?"
-		else if argument 2 is "MOD":
+		else if argument 2 is "MODERATOR":
 			if argument 2 is set:
 				set {mineplex.rank.%arg-1%} to "&6&lMOD "
 				execute console command "/__mp__dp__ %arg-1%"
@@ -2288,7 +2276,7 @@ command /updaterank [<offline player>] [<string>]:
 				updateRankAPI(arg-1)
 			else:
 				send "&9Message> &cErr...something went wrong?"
-		else if argument 2 is "SRMOD":
+		else if argument 2 is "SNR_MODERATOR":
 			if argument 2 is set:
 				set {mineplex.rank.%arg-1%} to "&6&lSR.MOD "
 				execute console command "/__mp__dp__ %arg-1%"
@@ -2304,7 +2292,7 @@ command /updaterank [<offline player>] [<string>]:
 				updateRankAPI(arg-1)
 			else:
 				send "&9Message> &cErr...something went wrong?"
-		else if argument 2 is "CMOD":
+		else if argument 2 is "CLANS_MODERATOR":
 			if argument 2 is set:
 				set {mineplex.rank.%arg-1%} to "&6&lC.MOD "
 				execute console command "/__mp__dp__ %arg-1%"
@@ -2322,6 +2310,9 @@ command /updaterank [<offline player>] [<string>]:
 				send "&9Message> &cErr...something went wrong?"
 		else if argument 2 is "ADMIN":
 			if argument 2 is set:
+				if player doesn't have permission "mineplex.admin":
+					send "&9Client Manager> &c&lInsufficient privileges!"
+					stop
 				set {mineplex.rank.%arg-1%} to "&4&lADMIN "
 				execute console command "/__mp__dp__ %arg-1%"
 				add "mineplex.trainee" to arg-1's permissions
@@ -2342,6 +2333,9 @@ command /updaterank [<offline player>] [<string>]:
 				send "&9Message> &cErr...something went wrong?"
 		else if argument 2 is "LEADER":
 			if argument 2 is set:
+				if player doesn't have permission "mineplex.leader":
+					send "&9Client Manager> &c&lInsufficient privileges!"
+					stop
 				set {mineplex.rank.%arg-1%} to "&4&lLEADER "
 				execute console command "/__mp__dp__ %arg-1%"
 				add "mineplex.trainee" to arg-1's permissions
@@ -2362,6 +2356,9 @@ command /updaterank [<offline player>] [<string>]:
 				send "&9Message> &cErr...something went wrong?"
 		else if argument 2 is "OWNER":
 			if argument 2 is set:
+				if player doesn't have permission "mineplex.owner":
+					send "&9Client Manager> &c&lInsufficient privileges!"
+					stop
 				set {mineplex.rank.%arg-1%} to "&4&lOWNER "
 				execute console command "/__mp__dp__ %arg-1%"
 				add "mineplex.trainee" to arg-1's permissions
@@ -2400,6 +2397,9 @@ command /updaterank [<offline player>] [<string>]:
 				send "&9Message> &cErr...something went wrong?"
 		else if argument 2 is "SUPPORT":
 			if argument 2 is set:
+				if player doesn't have permission "mineplex.admin":
+					send "&9Client Manager> &c&lInsufficient privileges!"
+					stop
 				set {mineplex.rank.%arg-1%} to "&9&lSUPPORT "
 				execute console command "/__mp__dp__ %arg-1%"
 				add "mineplex.trainee" to arg-1's permissions
@@ -2418,9 +2418,9 @@ command /updaterank [<offline player>] [<string>]:
 				updateRankAPI(arg-1)
 			else:
 				send "&9Message> &cErr...something went wrong?"
-		else if argument 2 is "MEDIA":
+		else if argument 2 is "ARTIST":
 			if argument 2 is set:
-				set {mineplex.rank.%arg-1%} to "&9&lMEDIA "
+				set {mineplex.rank.%arg-1%} to "&9&lARTIST "
 				execute console command "/__mp__dp__ %arg-1%"
 				add "mineplex.builder" to arg-1's permissions
 				add "mineplex.trainee" to arg-1's permissions
@@ -2429,9 +2429,9 @@ command /updaterank [<offline player>] [<string>]:
 				add "mineplex.srmod" to arg-1's permissions
 				add "mineplex.legend" to arg-1's permissions
 				add "mineplex.titan" to arg-1's permissions
-				send "&9Client Manager> &7%arg-1%'s rank has been updated to Media!"
-				send "&9Client Manager> &7Your rank has been updated to Media!" to arg 1
-				set arg-1 tab name to "&9&lMEDIA &e%arg-1%"
+				send "&9Client Manager> &7%arg-1%'s rank has been updated to Artist!"
+				send "&9Client Manager> &7Your rank has been updated to Artist!" to arg 1
+				set arg-1 tab name to "&9&lARTIST &e%arg-1%"
 				updateRankAPI(arg-1)
 			else:
 				send "&9Message> &cErr...something went wrong?"
@@ -2449,9 +2449,12 @@ command /updaterank [<offline player>] [<string>]:
 				updateRankAPI(arg-1)
 			else:
 				send "&9Message> &cErr...something went wrong?"
-		else if argument 2 is "JRDEV":
+		else if argument 2 is "JNR_DEVELOPER":
 			if argument 2 is set:
-				set {mineplex.rank.%arg-1%} to "&c&lJR.DEV "
+				if player doesn't have permission "mineplex.jrdev":
+					send "&9Client Manager> &c&lInsufficient privileges!"
+					stop
+				set {mineplex.rank.%arg-1%} to "&6&lJR.DEV "
 				execute console command "/__mp__dp__ %arg-1%"
 				add "mineplex.trainee" to arg-1's permissions
 				add "mineplex.mod" to arg-1's permissions
@@ -2463,12 +2466,15 @@ command /updaterank [<offline player>] [<string>]:
 				add "mineplex.titan" to arg-1's permissions
 				send "&9Client Manager> &7%arg-1%'s rank has been updated to Jr.Dev!"
 				send "&9Client Manager> &7Your rank has been updated to Jr.Dev!" to arg 1
-				set arg-1 tab name to "&c&lJR.DEV &e%arg-1%"
+				set arg-1 tab name to "&6&lJR.DEV &e%arg-1%"
 				updateRankAPI(arg-1)
 			else:
 				send "&9Message> &cErr...something went wrong?"
-		else if argument 2 is "DEV":
+		else if argument 2 is "DEVELOPER":
 			if argument 2 is set:
+				if player doesn't have permission "mineplex.dev":
+					send "&9Client Manager> &c&lInsufficient privileges!"
+					stop
 				set {mineplex.rank.%arg-1%} to "&4&lDEV "
 				execute console command "/__mp__dp__ %arg-1%"
 				add "mineplex.trainee" to arg-1's permissions
@@ -2530,7 +2536,7 @@ command /updaterank [<offline player>] [<string>]:
 				set arg-1 tab name to "&5&lYT &e%arg-1%"
 				updateRankAPI(arg-1)
 			else:
-				send "&9Client Manager> tf?"
+				send "&9Message> &cErr...something went wrong?"
 		else:
 			send "&9Client Manager> &c&lInvalid rank!"
 
@@ -2909,9 +2915,6 @@ command /message [<player>] [<text>]:
 			send "&9Message> &cErr...something went wrong?"
 
 
-command /ping:
-	trigger:
-		send "&9Ping> &7PONG!"
 
 on command:
 	command is "minecraft:me":
@@ -2932,14 +2935,15 @@ command /news [<string>] [<string>] [<string>]:
 	trigger:
 		if arg 1 is not set:
 			send "&9News Manager> &7Available news arguments for this command:"
-			send "&6/news list &7Lists (numbered) stored news messages from database. &cAdmin"
-			send "&6/news add <newsEntry> &7Adds specified news entry string to database at end of table. &cAdmin"
-			send "&6/news delete ## &7Removes specified (numbered) news entry string from database. &cAdmin"
-			send "&6/news set ## <newsEntry> &7Updates specified (numbered) news entry string from database. &cAdmin"
-			send "&c*Please Note: &7Updates to server news entries from the database are on a 4 minute cycle! &cAdmin"
+			send "&4/news list &7Lists (numbered) stored news messages from database. &4Admin"
+			send "&4/news add <newsEntry> &7Adds specified news entry string to database at end of table. &4Admin"
+			send "&4/news delete ## &7Removes specified (numbered) news entry string from database. &4Admin"
+			send "&4/news set ## <newsEntry> &7Updates specified (numbered) news entry string from database. &4Admin"
+			send "&c*Please Note: &7Updates to server news entries from the database are on a 4 minute cycle! &4Admin"
 		else:
 			if arg 1 is "list":
 				send "&9Hub Manager> &7Current server news messages:"
+				wait 5 ticks
 				send "&9Hub Manager> &6News 1 &7: &f%{mineplex.news.line1}%"
 				send "&9Hub Manager> &6News 2 &7: &f%{mineplex.news.line2}%"
 				send "&9Hub Manager> &6News 3 &7: &f%{mineplex.news.line3}%"
@@ -3141,14 +3145,25 @@ command /global [<text>]:
 		else:
 			broadcast "&9Announcement> &b%arg-1%"
 
+every 3 seconds:
+	set {mineplex.lag.avg.1} to tps
+	wait 1 second
+	set {mineplex.lag.avg.2} to tps
+	wait 1 second
+	set {mineplex.lag.avg.3} to tps
+
 command /lag:
-	aliases: /monitor
+	permission: mineplex.jrdev
+	permission message: &9Chat> &7PONG!
+	aliases: /ping
 	trigger:
 		set {_tps} to tps
 		set {_f} to free ram
 		set {_m} to max ram
+		set {_avg} to {mineplex.lag.avg.1} + {mineplex.lag.avg.2} + {mineplex.lag.avg.3}
+		set {_avg} to {_avg} / 3
 		send "&9LagMeter> &7Live-------&e%{_tps}%"
-		send "&9LagMeter> &7Avg--------&eNaN"
+		send "&9LagMeter> &7Avg--------&e%{_avg}%"
 		send "&9LagMeter> &eMEM (RAM)"
 		send "&9LagMeter> &7Free-------&e%{_f}%MB"
 		send "&9LagMeter> &7Max--------&e%{_m}%MB"
