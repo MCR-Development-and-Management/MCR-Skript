@@ -2139,14 +2139,14 @@ command /silence:
 			delete {mineplex.chatslow}
 			send "&9Chat> &6%player% &7has disabled chat slow." to all players
 			set {mineplex.chatsilence} to true
-			send "&9Chat> &7The chat has been silenced for Permanent." to all players
+			send "&9Chat> &7The chat has been silenced for &aPermanent&7." to all players
 			stop
 		if {mineplex.chatsilence} is set:
 			delete {mineplex.chatsilence}
-			send "&9Chat> &7The chat is not longer silenced." to all players
+			send "&9Chat> &7The chat is no longer silenced." to all players
 		else:
 			set {mineplex.chatsilence} to true
-			send "&9Chat> &7The chat has been silenced for Permanent." to all players
+			send "&9Chat> &7The chat has been silenced for &aPermanent&7." to all players
 
 command /locate [<string>]:
 	aliases: /find, /where
