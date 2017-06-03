@@ -5201,12 +5201,15 @@ command /gm [<player>]:
 				set the player's gamemode to survival
 				send "&9Game Mode> &7%{_p}% Creative Mode: &cFalse"
 		else:
-			if arg-1's gamemode is survival:
-				set the arg-1's gamemode to creative
-				send "&9Game Mode> &7%arg-1% Creative Mode: &aTrue"
+			if player has permission "mineplex.admin":
+				if arg-1's gamemode is survival:
+					set the arg-1's gamemode to creative
+					send "&9Game Mode> &7%arg-1% Creative Mode: &aTrue"
+				else:
+					set the arg-1's gamemode to survival
+					send "&9Game Mode> &7%arg-1% Creative Mode: &cFalse"
 			else:
-				set the arg-1's gamemode to survival
-				send "&9Game Mode> &7%arg-1% Creative Mode: &cFalse"
+				send "&9Permissions> &7This requires Permission Rank [&9ADMIN&7]."
 
 command /message [<player>] [<text>]:
 	aliases: /tell, /m, /w, /msg, /whisper
