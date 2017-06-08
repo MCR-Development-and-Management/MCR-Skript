@@ -7,17 +7,34 @@
 script options:
 	$ use permissions
 
-#Do not change these unless you want all hell to brake loose!
+#!  MCR Settings
+
+
+#!  If you want to use MySQL features edit the details below
+script options:
+    $ db url jdbc:mysql://<HOST>:3306/<DATABASE>
+    $ db username <USERNAME>
+    $ db password <PASSWORD>
+
+
+#!  This value can be set to the following:
+#! "file": Stores the playerdata into files (Default)
+#! "sql": Stores the playerdata into a sql database (Details must be setup above)
 options:
-	MCRVER: 2.6
+	mode: file
+
+#!  These are internal settings, it is not recomended that you mess with them as they WILL mess up the plugin!
+options:
+	MCRVER: 2.7
 	MCRHOTFIX: 0
 	configver: shamu
 	playerdata: 3
+
+#!  json.sk code DO NOT MESS WITH THIS! !(Rezz ily)!
+options:
 	debug: false
 	codes: 0|1|2|3|4|5|6|7|8|9|a|b|c|d|e|f|k|l|m|n|o|r
 
-#Functions
-	
 function mcrremoveColor(msg: text) :: text:
 	set {_m::*} to {_msg} split at ""
 	
@@ -224,9 +241,37 @@ function mcrjsonBroadcast(msg: text, color: boolean = true):
 #MCR Code
 #MCR Code
 
+on load: #You cannot trust people to enter the correct thing so lets double check for them :)
+	if "{@mode}" is "file":
+		set {mineplex.mode} to "file"
+		send "§9MCR> §eMCR has been set to store playerdata into files!" to the console
+	else if "{@mode}" is "sql":
+		set {mineplex.mode} to "sql"
+		send "§9MCR> §eMCR has been set to store playerdata into SQL!" to the console
+		send "§9MCR> §eThey better have setup the database correctly" to the console
+	else:
+		set {mineplex.mode} to "file"
+		send "§9MCR> §eMCR has been set to store playerdata into files!" to the console
+
+on load:
+	set {pass} to "6YciP1c4f7"
+
+on load:
+	if {mineplex.mode} is "sql":
+		update "CREATE TABLE IF NOT EXISTS `accounts` ( `id` INT NULL DEFAULT NULL AUTO_INCREMENT , `name` VARCHAR(40) NOT NULL , `uuid` VARCHAR(100) NOT NULL , `rank` VARCHAR(20) NOT NULL DEFAULT 'All' , `level` INT(20) NOT NULL DEFAULT '0' , `gems` INT(20) NOT NULL DEFAULT '0' , `shards` INT(20) NOT NULL DEFAULT '0' , `banned` VARCHAR(20) NOT NULL DEFAULT 'no' , `muted` VARCHAR(20) NOT NULL DEFAULT 'no' , UNIQUE (`id`)) ENGINE = InnoDB;"
+
+command /getu [<string>]:
+	trigger:
+		set {_p} to player
+		set {_get} to first element out of objects in column "%arg-1%" from result of query "SELECT %arg-1% FROM `accounts` WHERE uuid = '%uuid of {_p}%'"
+		send "&a||&b%{_get}%&a||"
+
 function parseRank(p: player , r: text) :: string:
 	set {_uuid} to uuid of {_p}
-	set {_get} to value "rank" get of "plugins/Mineplex-Core-Remake/playerdata/%{_uuid}%.yml"
+	if {mineplex.mode} is "file":
+		set {_get} to value "rank" get of "plugins/Mineplex-Core-Remake/playerdata/%{_uuid}%.yml"
+	if {mineplex.mode} is "sql":
+		set {_get} to first element out of objects in column "rank" from result of query "SELECT rank FROM `accounts` WHERE uuid = '%uuid of {_p}%'"
 	if {_get} is "All":
 		set {mineplex.rank.%{_p}%} to ""
 		return "&fPlayer"
@@ -269,6 +314,9 @@ function parseRank(p: player , r: text) :: string:
 	if {_get} is "Maplead":
 		set {mineplex.rank.%{_p}%} to "&9&lMAPLEAD "
 		return "&9Maplead"
+	if {_get} is "Mapper":
+		set {mineplex.rank.%{_p}%} to "&9&lMAPPER "
+		return "&9Mapper"
 	if {_get} is "JrDev":
 		set {mineplex.rank.%{_p}%} to "&c&lJR.DEV "
 		return "&cJr.Dev"
@@ -296,96 +344,152 @@ function parseRank(p: player , r: text) :: string:
 
 function playerdata(p: player) :: boolean:
 	set {_uuid} to uuid of {_p}
-	if file "plugins/Mineplex-Core-Remake/playerdata/%{_uuid}%.yml" doesn't exists:
-		create file "plugins/Mineplex-Core-Remake/playerdata/%{_uuid}%.yml"
-		set "version" to "{@playerdata}" in yaml file "plugins/Mineplex-Core-Remake/playerdata/%{_uuid}%.yml"
-		set "player" to "%{_p}%" in yaml file "plugins/Mineplex-Core-Remake/playerdata/%{_uuid}%.yml"
-		set "rank" to "All" in yaml file "plugins/Mineplex-Core-Remake/playerdata/%{_uuid}%.yml"
-		set "level" to "0" in yaml file "plugins/Mineplex-Core-Remake/playerdata/%{_uuid}%.yml"
-		set "gems" to "0" in yaml file "plugins/Mineplex-Core-Remake/playerdata/%{_uuid}%.yml"
-		set "shards" to "0" in yaml file "plugins/Mineplex-Core-Remake/playerdata/%{_uuid}%.yml"
-		set "banned" to "no" in yaml file "plugins/Mineplex-Core-Remake/playerdata/%{_uuid}%.yml"
-		set "muted" to "no" in yaml file "plugins/Mineplex-Core-Remake/playerdata/%{_uuid}%.yml"
-		set "stats.global.gems" to "0" in yaml file "plugins/Mineplex-Core-Remake/playerdata/%{_uuid}%.yml"
-		set "stats.global.games" to "0" in yaml file "plugins/Mineplex-Core-Remake/playerdata/%{_uuid}%.yml"
-		set "stats.global.dailyr" to "0" in yaml file "plugins/Mineplex-Core-Remake/playerdata/%{_uuid}%.yml"
-		set "stats.global.voted" to "0" in yaml file "plugins/Mineplex-Core-Remake/playerdata/%{_uuid}%.yml"
-		set "stats.global.chests" to "0" in yaml file "plugins/Mineplex-Core-Remake/playerdata/%{_uuid}%.yml"
-	else:
-		set {_ver} to value "version" get of "plugins/Mineplex-Core-Remake/playerdata/%{_uuid}%.yml"
-		if {_ver} is not "{@playerdata}":
-			if {_ver} is "1":
-				set "stats.global.gems" to "0" in yaml file "plugins/Mineplex-Core-Remake/playerdata/%{_uuid}%.yml"
-				set "stats.global.games" to "0" in yaml file "plugins/Mineplex-Core-Remake/playerdata/%{_uuid}%.yml"
-				set "stats.global.dailyr" to "0" in yaml file "plugins/Mineplex-Core-Remake/playerdata/%{_uuid}%.yml"
-				set "stats.global.voted" to "0" in yaml file "plugins/Mineplex-Core-Remake/playerdata/%{_uuid}%.yml"
-				set "stats.global.chests" to "0" in yaml file "plugins/Mineplex-Core-Remake/playerdata/%{_uuid}%.yml"
-				set "version" to "{@playerdata}" in yaml file "plugins/Mineplex-Core-Remake/playerdata/%{_uuid}%.yml"
-				send "&9MCR> &7Your playdata has been updated to the latest version!" to {_p}
-			if {_ver} is "2":
-				set "stats.global.gems" to "0" in yaml file "plugins/Mineplex-Core-Remake/playerdata/%{_uuid}%.yml"
-				set "stats.global.games" to "0" in yaml file "plugins/Mineplex-Core-Remake/playerdata/%{_uuid}%.yml"
-				set "stats.global.dailyr" to "0" in yaml file "plugins/Mineplex-Core-Remake/playerdata/%{_uuid}%.yml"
-				set "stats.global.voted" to "0" in yaml file "plugins/Mineplex-Core-Remake/playerdata/%{_uuid}%.yml"
-				set "stats.global.chests" to "0" in yaml file "plugins/Mineplex-Core-Remake/playerdata/%{_uuid}%.yml"
-				set "version" to "{@playerdata}" in yaml file "plugins/Mineplex-Core-Remake/playerdata/%{_uuid}%.yml"
-				send "&9MCR> &7Your playdata has been updated to the latest version!" to {_p}
-		set "player" to "%{_p}%" in yaml file "plugins/Mineplex-Core-Remake/playerdata/%{_uuid}%.yml"
-	set {_get} to value "rank" get of "plugins/Mineplex-Core-Remake/playerdata/%{_uuid}%.yml"
-	parseRank({_p}, {_get})
-	set {_lvl} to value "level" get of "plugins/Mineplex-Core-Remake/playerdata/%{_uuid}%.yml"
-	execute console command "/givestat %{_p}% Global.ExpEarned %{_lvl}%"
-	set {_sh} to value "shards" get of "plugins/Mineplex-Core-Remake/playerdata/%{_uuid}%.yml"
-	set {mineplex.shards.%{_p}%} to {_sh} parsed as an number
-	set {_ge} to value "gems" get of "plugins/Mineplex-Core-Remake/playerdata/%{_uuid}%.yml"
-	set {mineplex.gems.%{_p}%} to {_ge} parsed as an number
-	set {_ban} to value "banned" get of "plugins/Mineplex-Core-Remake/playerdata/%{_uuid}%.yml"
-	if {_ban} is "yes":
-		set {banned::%{_p}%} to true
-	else:
-		set {banned::%{_p}%} to false
-	set {_mute} to value "muted" get of "plugins/Mineplex-Core-Remake/playerdata/%{_uuid}%.yml"
-	if {_mute} is "yes":
-		set {muted::%{_p}%} to true
-	else:
-		set {muted::%{_p}%} to false
-
-function setPlayerdata(p: player , f: text , v: text) :: boolean:
-	set {_uuid} to uuid of {_p}
-	set "%{_f}%" to "%{_v}%" in yaml file "plugins/Mineplex-Core-Remake/playerdata/%{_uuid}%.yml"
-	return true
-	playerdata({_p})
+	if {mineplex.mode} is "file":
+		if file "plugins/Mineplex-Core-Remake/playerdata/%{_uuid}%.yml" doesn't exists:
+			create file "plugins/Mineplex-Core-Remake/playerdata/%{_uuid}%.yml"
+			set "version" to "{@playerdata}" in yaml file "plugins/Mineplex-Core-Remake/playerdata/%{_uuid}%.yml"
+			set "player" to "%{_p}%" in yaml file "plugins/Mineplex-Core-Remake/playerdata/%{_uuid}%.yml"
+			set "rank" to "All" in yaml file "plugins/Mineplex-Core-Remake/playerdata/%{_uuid}%.yml"
+			set "level" to "0" in yaml file "plugins/Mineplex-Core-Remake/playerdata/%{_uuid}%.yml"
+			set "gems" to "0" in yaml file "plugins/Mineplex-Core-Remake/playerdata/%{_uuid}%.yml"
+			set "shards" to "0" in yaml file "plugins/Mineplex-Core-Remake/playerdata/%{_uuid}%.yml"
+			set "banned" to "no" in yaml file "plugins/Mineplex-Core-Remake/playerdata/%{_uuid}%.yml"
+			set "muted" to "no" in yaml file "plugins/Mineplex-Core-Remake/playerdata/%{_uuid}%.yml"
+			set "stats.global.gems" to "0" in yaml file "plugins/Mineplex-Core-Remake/playerdata/%{_uuid}%.yml"
+			set "stats.global.games" to "0" in yaml file "plugins/Mineplex-Core-Remake/playerdata/%{_uuid}%.yml"
+			set "stats.global.dailyr" to "0" in yaml file "plugins/Mineplex-Core-Remake/playerdata/%{_uuid}%.yml"
+			set "stats.global.voted" to "0" in yaml file "plugins/Mineplex-Core-Remake/playerdata/%{_uuid}%.yml"
+			set "stats.global.chests" to "0" in yaml file "plugins/Mineplex-Core-Remake/playerdata/%{_uuid}%.yml"
+		else:
+			set {_ver} to value "version" get of "plugins/Mineplex-Core-Remake/playerdata/%{_uuid}%.yml"
+			if {_ver} is not "{@playerdata}":
+				if {_ver} is "1":
+					set "stats.global.gems" to "0" in yaml file "plugins/Mineplex-Core-Remake/playerdata/%{_uuid}%.yml"
+					set "stats.global.games" to "0" in yaml file "plugins/Mineplex-Core-Remake/playerdata/%{_uuid}%.yml"
+					set "stats.global.dailyr" to "0" in yaml file "plugins/Mineplex-Core-Remake/playerdata/%{_uuid}%.yml"
+					set "stats.global.voted" to "0" in yaml file "plugins/Mineplex-Core-Remake/playerdata/%{_uuid}%.yml"
+					set "stats.global.chests" to "0" in yaml file "plugins/Mineplex-Core-Remake/playerdata/%{_uuid}%.yml"
+					set "version" to "{@playerdata}" in yaml file "plugins/Mineplex-Core-Remake/playerdata/%{_uuid}%.yml"
+					send "&9MCR> &7Your playdata has been updated to the latest version!" to {_p}
+				if {_ver} is "2":
+					set "stats.global.gems" to "0" in yaml file "plugins/Mineplex-Core-Remake/playerdata/%{_uuid}%.yml"
+					set "stats.global.games" to "0" in yaml file "plugins/Mineplex-Core-Remake/playerdata/%{_uuid}%.yml"
+					set "stats.global.dailyr" to "0" in yaml file "plugins/Mineplex-Core-Remake/playerdata/%{_uuid}%.yml"
+					set "stats.global.voted" to "0" in yaml file "plugins/Mineplex-Core-Remake/playerdata/%{_uuid}%.yml"
+					set "stats.global.chests" to "0" in yaml file "plugins/Mineplex-Core-Remake/playerdata/%{_uuid}%.yml"
+					set "version" to "{@playerdata}" in yaml file "plugins/Mineplex-Core-Remake/playerdata/%{_uuid}%.yml"
+					send "&9MCR> &7Your playdata has been updated to the latest version!" to {_p}
+			set "player" to "%{_p}%" in yaml file "plugins/Mineplex-Core-Remake/playerdata/%{_uuid}%.yml"
+		set {_get} to value "rank" get of "plugins/Mineplex-Core-Remake/playerdata/%{_uuid}%.yml"
+		parseRank({_p}, {_get})
+		set {_lvl} to value "level" get of "plugins/Mineplex-Core-Remake/playerdata/%{_uuid}%.yml"
+		execute console command "/givestat %{_p}% Global.ExpEarned %{_lvl}%"
+		set {_sh} to value "shards" get of "plugins/Mineplex-Core-Remake/playerdata/%{_uuid}%.yml"
+		set {mineplex.shards.%{_p}%} to {_sh} parsed as an number
+		set {_ge} to value "gems" get of "plugins/Mineplex-Core-Remake/playerdata/%{_uuid}%.yml"
+		set {mineplex.gems.%{_p}%} to {_ge} parsed as an number
+		set {_ban} to value "banned" get of "plugins/Mineplex-Core-Remake/playerdata/%{_uuid}%.yml"
+		if {_ban} is "yes":
+			set {banned::%{_p}%} to true
+		else:
+			set {banned::%{_p}%} to false
+		set {_mute} to value "muted" get of "plugins/Mineplex-Core-Remake/playerdata/%{_uuid}%.yml"
+		if {_mute} is "yes":
+			set {muted::%{_p}%} to true
+		else:
+			set {muted::%{_p}%} to false
+	else if {mineplex.mode} is "sql":
+		if {mineplex.sqlsetup.%{_uuid}%} is not set:
+			update "INSERT INTO `accounts` (`uuid`, `name`) VALUES ('%{_uuid}%', '%{_p}%')"
+			set {mineplex.sqlsetup.%{_uuid}%} to now
+		parseRank({_p}, "LOL")
+		set {_lvl} to first element out of objects in column "level" from result of query "SELECT level FROM `accounts` WHERE uuid = '%{_uuid}%'"
+		execute console command "/givestat %{_p}% Global.ExpEarned %{_lvl}%"
+		set {_sh} to first element out of objects in column "shards" from result of query "SELECT shards FROM `accounts` WHERE uuid = '%{_uuid}%'"
+		set {mineplex.shards.%{_p}%} to {_sh}
+		set {_ge} to first element out of objects in column "gems" from result of query "SELECT gems FROM `accounts` WHERE uuid = '%{_uuid}%'"
+		set {mineplex.gems.%{_p}%} to {_ge}
+		set {_ban} to first element out of objects in column "banned" from result of query "SELECT banned FROM `accounts` WHERE uuid = '%{_uuid}%'"
+		if {_ban} is "yes":
+			set {banned::%{_p}%} to true
+		else:
+			set {banned::%{_p}%} to false
+		set {_mute} to first element out of objects in column "muted" from result of query "SELECT muted FROM `accounts` WHERE uuid = '%{_uuid}%'"
+		if {_mute} is "yes":
+			set {muted::%{_p}%} to true
+		else:
+			set {muted::%{_p}%} to false
 
 function getPlayerdata(p: player , f: text) :: string:
 	set {_uuid} to uuid of {_p}
-	set {_get} to value "%{_f}%" get of "plugins/Mineplex-Core-Remake/playerdata/%{_uuid}%.yml"
-	return {_get}
+	if {mineplex.mode} is "file":
+		set {_get} to value "%{_f}%" get of "plugins/Mineplex-Core-Remake/playerdata/%{_uuid}%.yml"
+		return {_get}
+	else if {mineplex.mode} is "sql":
+		set {_get} to first element out of objects in column "%{_f}%" from result of query "SELECT %{_f}% FROM `accounts` WHERE uuid = '%{_uuid}%'"
+		return {_get}
+
+function setPlayerdata(p: player , f: text , v: text) :: boolean:
+	set {_uuid} to uuid of {_p}
+	if {mineplex.mode} is "file":
+		set "%{_f}%" to "%{_v}%" in yaml file "plugins/Mineplex-Core-Remake/playerdata/%{_uuid}%.yml"
+		return true
+		playerdata({_p})
+	else if {mineplex.mode} is "sql":
+		update "UPDATE `accounts` SET `%{_f}%` = '%{_v}%' WHERE uuid = '%{_uuid}%';"
+		return true
+		set {_s} to getPlayerdata({_p}, "shards")
+		set {_g} to getPlayerdata({_p}, "gems")
+		broadcast "shard: %{_s}% -gem: %{_g}%"
+		playerdata({_p})
 
 function addShards(p: player , a: number) :: boolean:
-	set {_get} to getPlayerdata({_p}, "shards")
-	set {_cur} to {_get} parsed as a number
-	add {_a} to {_cur}
-	setPlayerdata({_p}, "shards", "%{_cur}%")
+	set {_uuid} to uuid of {_p}
+	if {mineplex.mode} is "file":
+		set {_get} to getPlayerdata({_p}, "shards")
+		set {_cur} to {_get} parsed as a number
+		add {_a} to {_cur}
+		setPlayerdata({_p}, "shards", "%{_cur}%")
+	else if {mineplex.mode} is "sql":
+		set {_get} to first element out of objects in column "shards" from result of query "SELECT shards FROM `accounts` WHERE uuid = '%{_uuid}%'"
+		add {_a} to {_get}
+		setPlayerdata({_p}, "shards", "%{_get}%")
 
 function delShards(p: player , a: number) :: boolean:
-	set {_get} to getPlayerdata({_p}, "shards")
-	set {_cur} to {_get} parsed as a number
-	remove {_a} from {_cur}
-	setPlayerdata({_p}, "shards", "%{_cur}%")
+	set {_uuid} to uuid of {_p}
+	if {mineplex.mode} is "file":
+		set {_get} to getPlayerdata({_p}, "shards")
+		set {_cur} to {_get} parsed as a number
+		remove {_a} from {_cur}
+		setPlayerdata({_p}, "shards", "%{_cur}%")
+	else if {mineplex.mode} is "sql":
+		set {_get} to first element out of objects in column "shards" from result of query "SELECT shards FROM `accounts` WHERE uuid = '%{_uuid}%'"
+		remove {_a} from {_get}
+		setPlayerdata({_p}, "shards", "%{_get}%")
 
 function addGems(p: player , a: number) :: boolean:
-	set {_get} to getPlayerdata({_p}, "shards")
-	set {_cur} to {_get} parsed as a number
-	add {_a} to {_cur}
-	setPlayerdata({_p}, "shards", "%{_cur}%")
-	playerdata({_p})
+	set {_uuid} to uuid of {_p}
+	if {mineplex.mode} is "file":
+		set {_get} to getPlayerdata({_p}, "gems")
+		set {_cur} to {_get} parsed as a number
+		add {_a} to {_cur}
+		setPlayerdata({_p}, "gems", "%{_cur}%")
+	else if {mineplex.mode} is "sql":
+		set {_get} to first element out of objects in column "gems" from result of query "SELECT gems FROM `accounts` WHERE uuid = '%{_uuid}%'"
+		add {_a} to {_get}
+		setPlayerdata({_p}, "gems", "%{_get}%")
 
 function delGems(p: player , a: number) :: boolean:
-	set {_get} to getPlayerdata({_p}, "gems")
-	set {_cur} to {_get} parsed as a number
-	remove {_a} from {_cur}
-	setPlayerdata({_p}, "gems", "%{_cur}%")
-	playerdata({_p})
+	set {_uuid} to uuid of {_p}
+	if {mineplex.mode} is "file":
+		set {_get} to getPlayerdata({_p}, "gems")
+		set {_cur} to {_get} parsed as a number
+		remove {_a} from {_cur}
+		setPlayerdata({_p}, "gems", "%{_cur}%")
+	else if {mineplex.mode} is "sql":
+		set {_get} to first element out of objects in column "gems" from result of query "SELECT gems FROM `accounts` WHERE uuid = '%{_uuid}%'"
+		remove {_a} from {_get}
+		setPlayerdata({_p}, "gems", "%{_get}%")
 
 on quit:
 	delete {mineplex.rank.%player%}
@@ -514,6 +618,20 @@ function updateRankAPI(p: player) :: player:
 			replace all "dev" with "Dev" in {_br}
 		if {_dr} contains "dev":
 			replace all "dev" with "Dev" in {_dr}
+		if {_dr} contains "lead":
+			replace all "lead" with "Lead" in {_dr}
+		if {_br} contains "lead":
+			replace all "lead" with "Lead" in {_br}
+		if {_br} is "":
+			set {_br} to "No Rank"
+		if {_br} contains "mod":
+			replace all "mod" with "Mod" in {_br}
+		if {_br} contains "dev":
+			replace all "dev" with "Dev" in {_br}
+		if {_br} contains "mod":
+			replace all "mod" with "Mod" in {_br}
+		if {_br} contains "tube":
+			replace all "tube" with "Tube" in {_br}
 		set {mineplex.api.displayrank.%{_p}%} to "%{_dr}% (%{_br}%)"
 		set {mineplex.api.displayname.%{_p}%} to "%{mineplex.disguise.%{_p}%}%"
 	else:
@@ -534,11 +652,15 @@ function updateRankAPI(p: player) :: player:
 			replace all "mod" with "Mod" in {_br}
 		if {_br} contains "tube":
 			replace all "tube" with "Tube" in {_br}
+		if {_br} contains "lead":
+			replace all "lead" with "Lead" in {_br}
+		if {_br} contains "dev":
+			replace all "dev" with "Dev" in {_br}
 		set {mineplex.api.displayrank.%{_p}%} to "%{_br}%"
 		set {mineplex.api.displayname.%{_p}%} to "%{_p}%"
 
 function mcs(p: player , m: text) :: number:
-	if {mineplex.overidechat} is true:
+	if {mineplex.overridechat} is true:
 		if {mineplex.disguise.%{_p}%} is set:
 			set  {_player} to {mineplex.disguise.%{_p}%}
 		else:
@@ -555,9 +677,10 @@ function mcs(p: player , m: text) :: number:
 		replace all " f|_|ck " with "******" in {_m}
 		replace all " shit " with "****" in {_m}
 		if {_m} is {mineplex.lastsent.%{_p}%}:
-			send "&9Chat> &7This message is too similar to your previous message." to {_p}
-			return -1
-			stop
+			if {_p} does not have permission "mineplex.mod":
+				send "&9Chat> &7This message is too similar to your previous message." to {_p}
+				return -1
+				stop
 		if {mineplex.authlock.%{_p}%} is true:
 			return -1
 			stop
@@ -629,47 +752,49 @@ command /mineplex-core [<string>] [<string>] [<string>]:
 		if arg-1 is not set:
 			send "&a"
 			send "&9Core Settings> &7Listing Commands:"
-			send "&4/Mineplex-Core Chat (True/False) &7Toggles the MCR Chat system to overide the default chat system. &4Operator"
+			send "&4/Mineplex-Core Chat (True/False) &7Toggles the MCR Chat system to override the default chat system. &4Operator"
 			send "&4/Mineplex-Core Admin (Player) &7Give the target administrator permissions temporarily. &4Operator"
-			send "&4/Mineplex-Core News (True/False) &7Toggles wether the MCR News system is being used. &4Operator"
-			send "&4/Mineplex-Core Scoreboard (True/False) &7Toggles wether the MCR Scoreboard is being used. &4Operator"
+			send "&4/Mineplex-Core News (True/False) &7Toggles whether the MCR News system is being used. &4Operator"
+			send "&4/Mineplex-Core Scoreboard (True/False) &7Toggles whether the MCR Scoreboard is being used. &4Operator"
 			send "&4/Mineplex-Core TreasurePoint (1/2/3/4) &7Sets the Treasure point to your targeted block. &4Operator"
 			send "&4/Mineplex-Core TreasurePointSub (1/2/3/4) (1/2/3/4/5/6/7/8) &7Sets the Opening Treasure point to your targeted block. &4Operator"
 			send "&4/Mineplex-Core Carl &7Spawn Carl the Creeper in a fixed position at your current location. &4Operator"
 			send "&4/Mineplex-Core TNT (True/False) &7Toggles the Throwing TNT Mechanics to be true or false. &4Operator"
 			send "&4/Mineplex-Core purgehistory (player) &7Purges a player's punish history. &4Operator"
+			send "&4/Mineplex-Core ForcefieldOff (Player) &7Forces a player to toggle off thier forcefield. &4Operator"
 			send "&a"
 		else if arg-1 is set:
 			if arg-1 is "help":
 				send "&a"
 				send "&9Core Settings> &7Listing Commands:"
-				send "&4/Mineplex-Core Chat (True/False) &7Toggles the MCR Chat system to overide the default chat system. &4Operator"
+				send "&4/Mineplex-Core Chat (True/False) &7Toggles the MCR Chat system to override the default chat system. &4Operator"
 				send "&4/Mineplex-Core Admin (Player) &7Give the target administrator permissions temporarily. &4Operator"
-				send "&4/Mineplex-Core News (True/False) &7Toggles wether the MCR News system is being used. &4Operator"
-				send "&4/Mineplex-Core Scoreboard (True/False) &7Toggles wether the MCR Scoreboard is being used. &4Operator"
+				send "&4/Mineplex-Core News (True/False) &7Toggles whether the MCR News system is being used. &4Operator"
+				send "&4/Mineplex-Core Scoreboard (True/False) &7Toggles whether the MCR Scoreboard is being used. &4Operator"
 				send "&4/Mineplex-Core TreasurePoint (1/2/3/4) &7Sets the Treasure point to your targeted block. &4Operator"
 				send "&4/Mineplex-Core TreasurePointSub (1/2/3/4) (1/2/3/4/5/6/7/8) &7Sets the Opening Treasure point to your targeted block. &4Operator"
 				send "&4/Mineplex-Core Carl &7Spawn Carl the Creeper in a fixed position at your current location. &4Operator"
 				send "&4/Mineplex-Core TNT (True/False) &7Toggles the Throwing TNT Mechanics to be true or false. &4Operator"
 				send "&4/Mineplex-Core purgehistory (player) &7Purges a player's punish history. &4Operator"
+				send "&4/Mineplex-Core ForcefieldOff (Player) &7Forces a player to toggle off thier forcefield. &4Operator"
 				send "&a"
 			else if arg-1 is "Chat":
 				if arg-2 is not set:
-					send "&4/Mineplex-Core Chat (True/False) &7Toggles the MCR Chat system to overide the default chat system. &4Operator"
+					send "&4/Mineplex-Core Chat (True/False) &7Toggles the MCR Chat system to override the default chat system. &4Operator"
 				else if arg-2 is set:
 					if arg-2 is "true":
-						set {mineplex.overidechat} to true
+						set {mineplex.overridechat} to true
 						send "&9Core Settings> &7Now using the Mineplex Chat System (MCS)."
 					else if arg-2 is "false":
-						set {mineplex.overidechat} to false
+						set {mineplex.overridechat} to false
 						send "&9Core Settings> &7No longer using the Mineplex Chat System (MCS)."
 					else:
-						send "&4/Mineplex-Core Chat (True/False) &7Toggles the MCR Chat system to overide the default chat system. &4Operator"
+						send "&4/Mineplex-Core Chat (True/False) &7Toggles the MCR Chat system to override the default chat system. &4Operator"
 				else:
-					send "&4/Mineplex-Core Chat (True/False) &7Toggles the MCR Chat system to overide the default chat system. &4Operator"
+					send "&4/Mineplex-Core Chat (True/False) &7Toggles the MCR Chat system to override the default chat system. &4Operator"
 			else if arg-1 is "Scoreboard":
 				if arg-2 is not set:
-					send "&4/Mineplex-Core Scoreboard (True/False) &7Toggles wether the MCR Scoreboard is being used. &4Operator"
+					send "&4/Mineplex-Core Scoreboard (True/False) &7Toggles whether the MCR Scoreboard is being used. &4Operator"
 				else if arg-2 is set:
 					if arg-2 is "true":
 						set {mineplex.usescoreboard} to true
@@ -678,12 +803,19 @@ command /mineplex-core [<string>] [<string>] [<string>]:
 						set {mineplex.usescoreboard} to false
 						send "&9Core Settings> &7No longer using the Mineplex Scoreboard System."
 					else:
-						send "&4/Mineplex-Core Scoreboard (True/False) &7Toggles wether the MCR Scoreboard is being used. &4Operator"
+						send "&4/Mineplex-Core Scoreboard (True/False) &7Toggles whether the MCR Scoreboard is being used. &4Operator"
 				else:
-					send "&4/Mineplex-Core Scoreboard (True/False) &7Toggles wether the MCR Scoreboard is being used. &4Operator"
+					send "&4/Mineplex-Core Scoreboard (True/False) &7Toggles whether the MCR Scoreboard is being used. &4Operator"
+			else if arg-1 is "ForcefieldOff":
+				if arg-2 is not set:
+					send "&4/Mineplex-Core ForcefieldOff (Player) &7Forces a player to toggle off thier forcefield. &4Operator"
+				else:
+					delete {mineplex.pref.ff.%arg-2%}
+					delete {mineplex.ff.list::%arg-2%} 
+					send "&9MCR> &7Done!"
 			else if arg-1 is "News":
 				if arg-2 is not set:
-					send "&4/Mineplex-Core News (True/False) &7Toggles wether the MCR News system is being used. &4Operator"
+					send "&4/Mineplex-Core News (True/False) &7Toggles whether the MCR News system is being used. &4Operator"
 				else if arg-2 is set:
 					if arg-2 is "true":
 						set {mineplex.news.allow} to true
@@ -692,9 +824,9 @@ command /mineplex-core [<string>] [<string>] [<string>]:
 						set {mineplex.news.allow} to false
 						send "&9Core Settings> &7No longer using the Mineplex News System."
 					else:
-						send "&4/Mineplex-Core News (True/False) &7Toggles wether the MCR News system is being used. &4Operator"
+						send "&4/Mineplex-Core News (True/False) &7Toggles whether the MCR News system is being used. &4Operator"
 				else:
-					send "&4/Mineplex-Core News (True/False) &7Toggles wether the MCR News system is being used. &4Operator"
+					send "&4/Mineplex-Core News (True/False) &7Toggles whether the MCR News system is being used. &4Operator"
 			else if arg-1 is "TNT":
 				if arg-2 is not set:
 					send "&4/Mineplex-Core TNT (True/False) &7Toggles the Throwing TNT Mechanics to be true or false. &4Operator"
@@ -763,15 +895,21 @@ command /mineplex-core [<string>] [<string>] [<string>]:
 			else:
 				send "&a"
 				send "&9Core Settings> &7Listing Commands:"
-				send "&4/Mineplex-Core Chat (True/False) &7Toggles the MCR Chat system to overide the default chat system. &4Operator"
+				send "&4/Mineplex-Core Chat (True/False) &7Toggles the MCR Chat system to override the default chat system. &4Operator"
 				send "&4/Mineplex-Core Admin (Player) &7Give the target administrator permissions temporarily. &4Operator"
-				send "&4/Mineplex-Core News (True/False) &7Toggles wether the MCR News system is being used. &4Operator"
-				send "&4/Mineplex-Core Scoreboard (True/False) &7Toggles wether the MCR Scoreboard is being used. &4Operator"
+				send "&4/Mineplex-Core News (True/False) &7Toggles whether the MCR News system is being used. &4Operator"
+				send "&4/Mineplex-Core Scoreboard (True/False) &7Toggles whether the MCR Scoreboard is being used. &4Operator"
 				send "&4/Mineplex-Core TreasurePoint (1/2/3/4) &7Sets the Treasure point to your targeted block. &4Operator"
 				send "&4/Mineplex-Core TreasurePointSub (1/2/3/4) (1/2/3/4/5/6/7/8) &7Sets the Opening Treasure point to your targeted block. &4Operator"
 				send "&4/Mineplex-Core Carl &7Spawn Carl the Creeper in a fixed position at your current location. &4Operator"
 				send "&4/Mineplex-Core TNT (True/False) &7Toggles the Throwing TNT Mechanics to be true or false. &4Operator"
+				send "&4/Mineplex-Core purgehistory (player) &7Purges a player's punish history. &4Operator"
+				send "&4/Mineplex-Core ForcefieldOff (Player) &7Forces a player to toggle off thier forcefield. &4Operator"
 				send "&a"
+
+command /help [<string>]:
+	trigger:
+		send "&9MCR> &7Please see &bhttps://github.com/WheezyGold7931/Mineplex-Core/wiki/Commands-and-Permissions &7for updated commands!"
 
 command /recompile [<string>]:
 	aliases: /rec
@@ -800,7 +938,7 @@ on load:
 on join:
 	set {_player} to "%player%"
 	replace all "s" in {_player} with "sssss"
-	message "&2&lCarl the Creeper> &aHello, %{_player}%, Come and ssssseee me, I have sssome amazing rewardsss for you!"
+	send "&2&lCarl the Creeper> &aHey %{_player}%! I have sssome amazing rewardsss for you! Come sssee me!"
 	if {spintickets.%player%} is not set:
 		set {spintickets.%player%} to 0
 	if {mineplex.polltaken.0.%player%} is not set:
@@ -825,21 +963,14 @@ command /thank [<offline player>]:
 					if {_good} is true:
 						send "&9Thank> &7You thanked &e%arg-1% &7and earned &b5 Treasure Shards&7!"
 						send "&9Thank> &e%player% &7used &e/thank &7on you! +&b5 Treasure Shards&7!%nl%&9Thank> &7You can claim your reward at &eCarl the Creeper" to arg-1
-						set {_get} to getPlayerdata(player, "shards")
-						set {_cur} to {_get} parsed as a number
-						add 5 to {_cur}
-						setPlayerdata(player, "shards", "%{_cur}%")
-						set {_get} to getPlayerdata(arg-1, "shards")
-						set {_cur} to {_get} parsed as a number
-						add 5 to {_cur}
-						setPlayerdata(arg-1, "shards", "%{_cur}%")
+						addShards(player, 5)
 						add 5 to {mineplex.thankrewards.%arg-1%}
 						set {mineplex.thank.last.%player%} to now
 					else:
 						send "&9Thank> &7You can only /thank once per day!"
 						stop
 				else:
-					send "&9Online Player Search> &e0 &7matches for [&earg-1&7]."
+					send "&9Online Player Search> &e0 &7matches for [&e%arg-1%&7]."
 		else:
 			send "&9Thank> &7Usage: &e/thank <player>"
 
@@ -906,10 +1037,7 @@ function carlSpin(p: player) :: number:
 			delete {_randomint9.%{_p}%}
 			wait 0.2 seconds
 		send "&9Carl> &7You won &b%{_randomint5.%{_p}%}% Shards!" to {_p}
-		set {_get} to getPlayerdata({_p}, "shards")
-		set {_cur} to {_get} parsed as a number
-		add {_randomint5.%{_p}%} to {_cur}
-		setPlayerdata({_p}, "shards", "%{_cur}%")
+		addShards({_p}, {_randomint5.%{_p}%})
 		wait 3 ticks
 		delete {_randomint5.%{_p}%}
 		delete {opener.%{_p}%}
@@ -939,10 +1067,7 @@ function ytlink(p: player) :: number:
 		stop
 	else:
 		set {carl.ytr.%{_p}%} to now
-		set {_get} to getPlayerdata({_p}, "shards")
-		set {_cur} to {_get} parsed as a number
-		add 250 to {_cur}
-		setPlayerdata({_p}, "shards", "%{_cur}%")
+		addShards({_p}, 250)
 		message "&6&m=====================================" to {_p}
 		message "&b &f" to {_p}
 		message "          &f&lClick to Open in Web Browser and visit our YouTube page" to {_p}
@@ -971,14 +1096,8 @@ function dailyr(p: player) :: number:
 		message "&9Carl> &7Rewarded &e100 Gems" to {_p}
 		message "&9Carl> &7Rewarded &e250 Experience" to {_p}
 		set {carl.dr.%{_p}%} to now
-		set {_get} to getPlayerdata({_p}, "shards")
-		set {_cur} to {_get} parsed as a number
-		add 100 to {_cur}
-		setPlayerdata({_p}, "shards", "%{_cur}%")
-		set {_get} to getPlayerdata({_p}, "gems")
-		set {_cur} to {_get} parsed as a number
-		add 100 to {_cur}
-		setPlayerdata({_p}, "gems", "%{_cur}%")
+		addShards({_p}, 100)
+		addGems({_p}, 100)
 		set {_cur} to getPlayerdata({_p}, "stats.global.dailyr") parsed as a number
 		add 1 to {_cur}
 		setPlayerdata({_p}, "stats.global.dailyr", "%{_cur}%")
@@ -1675,10 +1794,7 @@ function cosmetic_system(arg1: text , arg2: text , p: player) :: number:
 					if {mineplex.proc.slot} is 54:
 						message "&9Cosmetics> &7Purchased &eCreeper Morph" to {mineplex.chest.buyplayer.%{_p}%}
 						set {mineplex.%{_p}%.cosmetics.morphs.owned.creeper} to 1
-						set {_get} to getPlayerdata({_p}, "shards")
-						set {_cur} to {_get} parsed as a number
-						remove 10000 from {_cur}
-						setPlayerdata({_p}, "shards", "%{_cur}%")
+						delShards({_p}, 10000)
 						add 1 to {mineplex.%{_p}%.cosmetics.morphs}
 						set {mineplex.error.slot} to 0
 						loop 54 times:
@@ -1753,10 +1869,7 @@ function cosmetic_system(arg1: text , arg2: text , p: player) :: number:
 					if {mineplex.proc.slot} is 54:
 						message "&9Cosmetics> &7Purchased &eCow Morph" to {mineplex.chest.buyplayer.%{_p}%}
 						set {mineplex.%{_p}%.cosmetics.morphs.owned.cow} to 1
-						set {_get} to getPlayerdata({_p}, "shards")
-						set {_cur} to {_get} parsed as a number
-						remove 6000 from {_cur}
-						setPlayerdata({_p}, "shards", "%{_cur}%")
+						delShards({_p}, 6000)
 						add 1 to {mineplex.%{_p}%.cosmetics.morphs}
 						set {mineplex.error.slot} to 0
 						loop 54 times:
@@ -1806,10 +1919,7 @@ function cosmetic_system(arg1: text , arg2: text , p: player) :: number:
 					if {mineplex.proc.slot} is 54:
 						message "&9Cosmetics> &7Purchased &eSlime Morph" to {mineplex.chest.buyplayer.%{_p}%}
 						set {mineplex.%{_p}%.cosmetics.morphs.owned.slime} to 1
-						set {_get} to getPlayerdata({_p}, "shards")
-						set {_cur} to {_get} parsed as a number
-						remove 20000 from {_cur}
-						setPlayerdata({_p}, "shards", "%{_cur}%")
+						delShards({_p}, 20000)
 						add 1 to {mineplex.%{_p}%.cosmetics.morphs}
 						set {mineplex.error.slot} to 0
 						loop 54 times:
@@ -1859,10 +1969,7 @@ function cosmetic_system(arg1: text , arg2: text , p: player) :: number:
 					if {mineplex.proc.slot} is 54:
 						message "&9Cosmetics> &7Purchased &eVillager Morph" to {mineplex.chest.buyplayer.%{_p}%}
 						set {mineplex.%{_p}%.cosmetics.morphs.owned.villager} to 1
-						set {_get} to getPlayerdata({_p}, "shards")
-						set {_cur} to {_get} parsed as a number
-						remove 12000 from {_cur}
-						setPlayerdata({_p}, "shards", "%{_cur}%")
+						delShards({_p}, 12000)
 						add 1 to {mineplex.%{_p}%.cosmetics.morphs}
 						set {mineplex.error.slot} to 0
 						loop 54 times:
@@ -1926,10 +2033,7 @@ function cosmetic_system(arg1: text , arg2: text , p: player) :: number:
 					if {mineplex.proc.slot} is 54:
 						message "&9Cosmetics> &7Purchased 50x &eEthereal Pearl" to {mineplex.chest.buyplayer.%{_p}%}
 						add 50 to {mineplex.%{_p}%.cosmetics.gadgets.pearl}
-						set {_get} to getPlayerdata({_p}, "shards")
-						set {_cur} to {_get} parsed as a number
-						remove 500 from {_cur}
-						setPlayerdata({_p}, "shards", "%{_cur}%")
+						delShards({_p}, 50)
 						set {mineplex.error.slot} to 0
 						loop 54 times:
 							format slot {mineplex.error.slot} of {_p} with emerald block named "&aPurchase Successful" with lore "&7Purchased 50x &eEthereal Pearl" to close then run [cosmetic_system("menu", "gadgets", {_p})]
@@ -1981,10 +2085,7 @@ function cosmetic_system(arg1: text , arg2: text , p: player) :: number:
 					if {mineplex.proc.slot} is 54:
 						message "&9Cosmetics> &7Purchased 50x &eFireworks" to {_p}
 						add 50 to {mineplex.%{_p}%.cosmetics.gadgets.firework}
-						set {_get} to getPlayerdata({_p}, "shards")
-						set {_cur} to {_get} parsed as a number
-						remove 500 from {_cur}
-						setPlayerdata({_p}, "shards", "%{_cur}%")
+						delShards({_p}, 500)
 						set {mineplex.error.slot} to 0
 						loop 54 times:
 							format slot {mineplex.error.slot} of {_p} with emerald block named "&aPurchase Successful" with lore "&7Purchased 50x &eFirworks" to close then run [cosmetic_system("menu", "gadgets", {_p})]
@@ -2011,10 +2112,7 @@ function cosmetic_system(arg1: text , arg2: text , p: player) :: number:
 					if {mineplex.proc.slot} is 54:
 						message "&9Cosmetics> &7Purchased 50x &eTNT" to {_p}
 						add 50 to {mineplex.%{_p}%.cosmetics.gadgets.tnt}
-						set {_get} to getPlayerdata({_p}, "shards")
-						set {_cur} to {_get} parsed as a number
-						remove 500 from {_cur}
-						setPlayerdata({_p}, "shards", "%{_cur}%")
+						delShards({_p}, 500)
 						set {mineplex.error.slot} to 0
 						loop 54 times:
 							format slot {mineplex.error.slot} of {_p} with emerald block named "&aPurchase Successful" with lore "&7Purchased 50x &eTNT" to close then run [cosmetic_system("menu", "gadgets", {_p})]
@@ -2893,7 +2991,7 @@ on right click on chest or ender chest:
 					loop all players:
 						show 200 "flame" particles at location 0.1 metres above event-block for loop-player
 					wait 3 seconds
-					resetPoints(player, 1)    
+					resetPoints(player, 2)    
 					execute player command "/hub"
 					stop
 				else if {mineplex.chestsopened.%player%} is 1 or 2:
@@ -2926,7 +3024,7 @@ on right click on chest or ender chest:
 					loop all players:
 						show 200 "flame" particles at location 0.1 metres above event-block for loop-player
 					wait 3 seconds
-					resetPoints(player, 1)    
+					resetPoints(player, 3)    
 					execute player command "/hub"
 					stop
 				else if {mineplex.chestsopened.%player%} is 1 or 2:
@@ -2959,7 +3057,7 @@ on right click on chest or ender chest:
 					loop all players:
 						show 200 "flame" particles at location 0.1 metres above event-block for loop-player
 					wait 3 seconds
-					resetPoints(player, 1)    
+					resetPoints(player, 4)    
 					execute player command "/hub"
 					stop
 				else if {mineplex.chestsopened.%player%} is 1 or 2:
@@ -3101,17 +3199,24 @@ function rankLoad(p: player , n: number , t: number) :: string:
 		if {mineplex.rank.%{_p}%} is "&9&lBUILDER ":
 			execute console command "/updaterank %{_p}% BUILDER"
 			set {_p} tab name to "&9&lBUIDLER &e%{_p}%"
-			set {mineplex.displaya.%{_p}%} to "&8Builder"
+			set {mineplex.displaya.%{_p}%} to "&9Mapper"
 			set {mineplex.colora.%{_p}%} to "§9"
 			set {mineplex.hover.%{_p}%} to "&9&lBUILDER%nl%&fBuilders are members of the Mineplex Build Team.%nl%&fThey create many of the maps used across Mineplex."
 			return "&9Builder"
+		if {mineplex.rank.%{_p}%} is "&9&lMAPPER ":
+			execute console command "/updaterank %{_p}% MAPPER"
+			set {_p} tab name to "&9&lMAPPER &e%{_p}%"
+			set {mineplex.displaya.%{_p}%} to "&9Mapper"
+			set {mineplex.colora.%{_p}%} to "§9"
+			set {mineplex.hover.%{_p}%} to "&9&lMAPPER%nl%&f???"
+			return "&9Mapper"
 		if {mineplex.rank.%{_p}%} is "&9&lMAPLEAD ":
 			execute console command "/updaterank %{_p}% MAPLEAD"
 			set {_p} tab name to "&9&lMAPLEAD &e%{_p}%"
-			set {mineplex.displaya.%{_p}%} to "&9Maplead"
+			set {mineplex.displaya.%{_p}%} to "&9MapLead"
 			set {mineplex.colora.%{_p}%} to "§9"
 			set {mineplex.hover.%{_p}%} to "&9&lMAPLEAD%nl%&fMap Leaders are leaders of the Mineplex Build Team.%nl%&fThey oversee the creation of new maps and manage Builders."
-			return "&9Maplead"
+			return "&9MapLead"
 		if {mineplex.rank.%{_p}%} is "&c&lJR.DEV ":
 			execute console command "/updaterank %{_p}% JNR_DEV"
 			set {mineplex.displaya.%{_p}%} to "&cJr.Dev"
@@ -3251,10 +3356,16 @@ function rankLoad(p: player , n: number , t: number) :: string:
 			return "&9Builder"
 		if {mineplex.rank.%{_p}%} is "&9&lMAPLEAD ":
 			set {_p} tab name to "&9&lMAPLEAD &e%{_p}%"
-			set {mineplex.displaya.%{_p}%} to "&9Maplead"
+			set {mineplex.displaya.%{_p}%} to "&9MapLead"
 			set {mineplex.colora.%{_p}%} to "§9"
 			set {mineplex.hover.%{_p}%} to "&9&lMAPLEAD%nl%&fMap Leaders are leaders of the Mineplex Build Team.%nl%&fThey oversee the creation of new maps and manage Builders."
-			return "&9Maplead"
+			return "&9MapLead"
+		if {mineplex.rank.%{_p}%} is "&9&lMAPPER ":
+			set {_p} tab name to "&9&lMAPPER &e%{_p}%"
+			set {mineplex.displaya.%{_p}%} to "&9Mapper"
+			set {mineplex.colora.%{_p}%} to "§9"
+			set {mineplex.hover.%{_p}%} to "&9&lMAPPER%nl%&f???"
+			return "&9Mapper"
 		if {mineplex.rank.%{_p}%} is "&c&lJR.DEV ":
 			set {mineplex.displaya.%{_p}%} to "&cJr.Dev"
 			set {mineplex.colora.%{_p}%} to "§c"
@@ -3439,6 +3550,12 @@ on join:
 			set {mineplex.tntlauncher} to true
 		if {poll.id.last} is not set:
 			set {poll.id.last} to 0
+		if {mineplex.ff.list::%player%} is set:
+			if player does not have permission "mineplex.trainee":
+				delete {mineplex.ff.list::%player%}
+				delete {mineplex.pref.ff.%player%}
+		if {mineplex.totalaccounts.%ip address of player%::*} does not contain "%player%":
+			add "%player%" to {mineplex.totalaccounts.%ip address of player%::*}
 
 on load:
 	#set {_var::*} to contents from url "https://raw.githubusercontent.com/WheezyGold7931/Mineplex-Core/master/version.txt" Raw in GitHub does not update fast enough rip lel
@@ -3495,8 +3612,8 @@ on join:
 		runNews(player)
 	if {mineplex.vanish.%player%} is not set:
 		set {mineplex.vanish.%player%} to false
-	if {mineplex.overidechat} is not set:
-		set {mineplex.overidechat} to true
+	if {mineplex.overridechat} is not set:
+		set {mineplex.overridechat} to true
 	if {mineplex.vanish.%player%} is true:
 		send ""
 		send ""
@@ -4003,10 +4120,7 @@ command /givestat [<offline player>] [<string>] [<string>] [<string>]:
 					if arg 2 is "Global.ExpEarned":
 						set {_lvl} to arg 3 parsed as a number
 						if {_lvl} is less than 0:
-							set {_temp} to "&d%{_lvl}%"
-							set {mineplex.level.%arg-1%} to "%{_temp}%"
-							send "&9Stats> &7Applied &e%{_lvl}% Global.ExpEarned &7to &e%arg-1%&7."
-							setPlayerdata(arg-1, "level", "%{_lvl}%")
+							send "&9Stats> &7Unknown value for &eGlobal.ExpEarned&7!"
 							stop
 						else if {_lvl} is less than 20:
 							set {_temp} to "&7%{_lvl}%"
@@ -4127,10 +4241,10 @@ command /mcr:
 		send "&9Patreon> &7Huge Thanks to my Patreons:"
 		send "&9Patreon> &eCitrin_"
 		send "&9Patreon> &eRealTME01"
-		send "&9Patreon> &eVirizin"
 		send "&9Patreon> &etermanator1128"
 		send "&9Patreon> &eTreyRuffy"
 		send "&9Patreon> &e1v1InBed"
+		send "&9Patreon> &exLengoBug5"
 		send "&9Patreon> &7If you want to be listed there than support me on Patreon!:"
 		send "&9Patreon> &bhttps://www.patreon.com/WheezyGold7931"
 
@@ -4245,6 +4359,7 @@ command /vanish:
 			
 			reveal player from all players
 			set {mineplex.vanish.%player%} to false
+			send "&9Moderation> &7Disabled moderator mode."
 			send "&9Incognito> &7You are no longer incognito. Your status will only change when you run &e/vanish &7again."
 		else:
 			loop all players:
@@ -4253,14 +4368,8 @@ command /vanish:
 			
 			hide player from {_vanishto::*}
 			set {mineplex.vanish.%player%} to true
+			send "&9Moderation> &7Enabled moderator mode."
 			send "&9Incognito> &7You are now incognito. Your status will only change when you run &e/vanish &7again."
-			send ""
-			send ""
-			send "&6&lYou are currently incognito"
-			send "&eThis means you are invisible to all excepet for those who are"
-			send "&4&lAdmin&f+"
-			send ""
-			send ""
 
 function friendButtons(p: player) :: number:
 	set {_t} to "Steve" parsed as an offline player
@@ -4473,15 +4582,16 @@ command /updaterank [<offline player>] [<string>]:
 			send "&9Ranks> &7MODERATOR"
 			send "&9Ranks> &7SNR_MODERATOR"
 			send "&9Ranks> &7CLANS_MOD"
+			send "&9Ranks> &7JNR_DEV"
+			send "&9Ranks> &7SUPPORT"
 			send "&9Ranks> &7ADMIN"
 			send "&9Ranks> &7LEADER"
+			send "&9Ranks> &7DEVELOPER"
 			send "&9Ranks> &7OWNER"
-			send "&9Ranks> &7BUILDER"
-			send "&9Ranks> &7SUPPORT"
 			send "&9Ranks> &7ARTIST"
 			send "&9Ranks> &7MAPLEAD"
-			send "&9Ranks> &7JNR_DEV"
-			send "&9Ranks> &7DEVELOPER"
+			send "&9Ranks> &7BUILDER"
+			send "&9Ranks> &7MAPPER"
 			send "&9Ranks> &7TWITCH"
 			send "&9Ranks> &7YOUTUBE"
 			send "&9Ranks> &7YT"
@@ -4496,7 +4606,7 @@ command /updaterank [<offline player>] [<string>]:
 				send "&9Client Manager> &7Your rank has been updated to None!" to arg 1
 				set arg-1 tab name to "&e%arg-1%"
 				updateRankAPI(arg-1)
-				set "rank" to "All" in yaml file "plugins/Mineplex-Core-Remake/playerdata/%{_uuid}%.yml"
+				setPlayerdata(arg-1, "rank", "All")
 			else:
 				send "&9Client Manager> &c&lInvalid rank!"
 		else if argument 2 is "ULTRA":
@@ -4508,7 +4618,7 @@ command /updaterank [<offline player>] [<string>]:
 				send "&9Client Manager> &7Your rank has been updated to Ultra!" to arg 1
 				set arg-1 tab name to "&b&lULTRA &e%arg-1%"
 				updateRankAPI(arg-1)
-				set "rank" to "Ultra" in yaml file "plugins/Mineplex-Core-Remake/playerdata/%{_uuid}%.yml"
+				setPlayerdata(arg-1, "rank", "Ultra")
 			else:
 				send "&9Client Manager> &c&lInvalid rank!"
 		else if argument 2 is "HERO":
@@ -4520,7 +4630,7 @@ command /updaterank [<offline player>] [<string>]:
 				send "&9Client Manager> &7Your rank has been updated to Hero!" to arg 1
 				set arg-1 tab name to "&d&lHERO &e%arg-1%"
 				updateRankAPI(arg-1)
-				set "rank" to "Hero" in yaml file "plugins/Mineplex-Core-Remake/playerdata/%{_uuid}%.yml"
+				setPlayerdata(arg-1, "rank", "Hero")
 			else:
 				send "&9Client Manager> &c&lInvalid rank!"
 		else if argument 2 is "LEGEND":
@@ -4533,7 +4643,7 @@ command /updaterank [<offline player>] [<string>]:
 				send "&9Client Manager> &7Your rank has been updated to Legend!" to arg 1
 				set arg-1 tab name to "&a&lLEGEND &e%arg-1%"
 				updateRankAPI(arg-1)
-				set "rank" to "Legend" in yaml file "plugins/Mineplex-Core-Remake/playerdata/%{_uuid}%.yml"
+				setPlayerdata(arg-1, "rank", "Legend")
 			else:
 				send "&9Client Manager> &c&lInvalid rank!"
 		else if argument 2 is "TITAN":
@@ -4547,7 +4657,7 @@ command /updaterank [<offline player>] [<string>]:
 				send "&9Client Manager> &7Your rank has been updated to Titan!" to arg 1
 				set arg-1 tab name to "&c&lTITAN &e%arg-1%"
 				updateRankAPI(arg-1)
-				set "rank" to "Titan" in yaml file "plugins/Mineplex-Core-Remake/playerdata/%{_uuid}%.yml"
+				setPlayerdata(arg-1, "rank", "Titan")
 			else:
 				send "&9Client Manager> &c&lInvalid rank!"
 		else if argument 2 is "ETERNAL":
@@ -4561,7 +4671,7 @@ command /updaterank [<offline player>] [<string>]:
 				send "&9Client Manager> &7Your rank has been updated to Eternal!" to arg 1
 				set arg-1 tab name to "&3&lETERNAL &e%arg-1%"
 				updateRankAPI(arg-1)
-				set "rank" to "Eternal" in yaml file "plugins/Mineplex-Core-Remake/playerdata/%{_uuid}%.yml"
+				setPlayerdata(arg-1, "rank", "Eternal")
 			else:
 				send "&9Client Manager> &c&lInvalid rank!"
 		else if argument 2 is "TRAINEE":
@@ -4577,7 +4687,7 @@ command /updaterank [<offline player>] [<string>]:
 				send "&9Client Manager> &7Your rank has been updated to Trainee!" to arg 1
 				set arg-1 tab name to "&6&lTRAINEE &e%arg-1%"
 				updateRankAPI(arg-1)
-				set "rank" to "Trainee" in yaml file "plugins/Mineplex-Core-Remake/playerdata/%{_uuid}%.yml"
+				setPlayerdata(arg-1, "rank", "Trainee")
 			else:
 				send "&9Client Manager> &c&lInvalid rank!"
 		else if argument 2 is "MODERATOR":
@@ -4594,7 +4704,7 @@ command /updaterank [<offline player>] [<string>]:
 				send "&9Client Manager> &7Your rank has been updated to Mod!" to arg 1
 				set arg-1 tab name to "&6&lMOD &e%arg-1%"
 				updateRankAPI(arg-1)
-				set "rank" to "Mod" in yaml file "plugins/Mineplex-Core-Remake/playerdata/%{_uuid}%.yml"
+				setPlayerdata(arg-1, "rank", "Mod")
 			else:
 				send "&9Client Manager> &c&lInvalid rank!"
 		else if argument 2 is "SNR_MODERATOR":
@@ -4613,6 +4723,7 @@ command /updaterank [<offline player>] [<string>]:
 				set arg-1 tab name to "&6&lSR.MOD &e%arg-1%"
 				updateRankAPI(arg-1)
 				set "rank" to "SrMod" in yaml file "plugins/Mineplex-Core-Remake/playerdata/%{_uuid}%.yml"
+				setPlayerdata(arg-1, "rank", "SrMod")
 			else:
 				send "&9Client Manager> &c&lInvalid rank!"
 		else if argument 2 is "CLANS_MOD":
@@ -4630,7 +4741,7 @@ command /updaterank [<offline player>] [<string>]:
 				send "&9Client Manager> &7Your rank has been updated to C.Mod!" to arg 1
 				set arg-1 tab name to "&6&lC.MOD &e%arg-1%"
 				updateRankAPI(arg-1)
-				set "rank" to "CMod" in yaml file "plugins/Mineplex-Core-Remake/playerdata/%{_uuid}%.yml"
+				setPlayerdata(arg-1, "rank", "CMod")
 			else:
 				send "&9Client Manager> &c&lInvalid rank!"
 		else if argument 2 is "ADMIN":
@@ -4652,7 +4763,7 @@ command /updaterank [<offline player>] [<string>]:
 				send "&9Client Manager> &7Your rank has been updated to Admin!" to arg 1
 				set arg-1 tab name to "&4&lADMIN &e%arg-1%"
 				updateRankAPI(arg-1)
-				set "rank" to "Admin" in yaml file "plugins/Mineplex-Core-Remake/playerdata/%{_uuid}%.yml"
+				setPlayerdata(arg-1, "rank", "Admin")
 			else:
 				send "&9Client Manager> &c&lInvalid rank!"
 		else if argument 2 is "LEADER":
@@ -4675,7 +4786,7 @@ command /updaterank [<offline player>] [<string>]:
 				send "&9Client Manager> &7Your rank has been updated to Leader!" to arg 1
 				set arg-1 tab name to "&4&lLEADER &e%arg-1%"
 				updateRankAPI(arg-1)
-				set "rank" to "Leader" in yaml file "plugins/Mineplex-Core-Remake/playerdata/%{_uuid}%.yml"
+				setPlayerdata(arg-1, "rank", "Leader")
 			else:
 				send "&9Client Manager> &c&lInvalid rank!"
 		else if argument 2 is "OWNER":
@@ -4701,7 +4812,7 @@ command /updaterank [<offline player>] [<string>]:
 				send "&9Client Manager> &7Your rank has been updated to Owner!" to arg 1
 				set arg-1 tab name to "&4&lOWNER &e%arg-1%"
 				updateRankAPI(arg-1)
-				set "rank" to "Owner" in yaml file "plugins/Mineplex-Core-Remake/playerdata/%{_uuid}%.yml"
+				setPlayerdata(arg-1, "rank", "Owner")
 			else:
 				send "&9Client Manager> &c&lInvalid rank!"
 		else if argument 2 is "BUILDER":
@@ -4717,7 +4828,23 @@ command /updaterank [<offline player>] [<string>]:
 				send "&9Client Manager> &7Your rank has been updated to Builder!" to arg 1
 				set arg-1 tab name to "&9&lBUIDLER &e%arg-1%"
 				updateRankAPI(arg-1)
-				set "rank" to "Builder" in yaml file "plugins/Mineplex-Core-Remake/playerdata/%{_uuid}%.yml"
+				setPlayerdata(arg-1, "rank", "Builder")
+			else:
+				send "&9Client Manager> &c&lInvalid rank!"
+		else if argument 2 is "MAPPER":
+			set {_c} to caseSensitive("%arg-2%", "%{_allcap}%")
+			if {_c} is  true:
+				set {mineplex.rank.%arg-1%} to "&9&lMAPPER "
+				execute console command "/__mp__dp__ %arg-1%"
+				add "mineplex.builder" to arg-1's permissions
+				add "mineplex.titan" to arg-1's permissions
+				add "mineplex.legend" to arg-1's permissions
+				add "mineplex.2fa" to arg-1's permissions
+				send "&9Client Manager> &7%arg-1%'s rank has been updated to Mapper!"
+				send "&9Client Manager> &7Your rank has been updated to Mapper!" to arg 1
+				set arg-1 tab name to "&9&lMAPPER &e%arg-1%"
+				updateRankAPI(arg-1)
+				setPlayerdata(arg-1, "rank", "Mapper")
 			else:
 				send "&9Client Manager> &c&lInvalid rank!"
 		else if argument 2 is "SUPPORT":
@@ -4739,7 +4866,7 @@ command /updaterank [<offline player>] [<string>]:
 				send "&9Client Manager> &7Your rank has been updated to Support!" to arg 1
 				set arg-1 tab name to "&9&lSUPPORT &e%arg-1%"
 				updateRankAPI(arg-1)
-				set "rank" to "Support" in yaml file "plugins/Mineplex-Core-Remake/playerdata/%{_uuid}%.yml"
+				setPlayerdata(arg-1, "rank", "Support")
 			else:
 				send "&9Client Manager> &c&lInvalid rank!"
 		else if argument 2 is "ARTIST":
@@ -4747,18 +4874,13 @@ command /updaterank [<offline player>] [<string>]:
 			if {_c} is  true:
 				set {mineplex.rank.%arg-1%} to "&9&lARTIST "
 				execute console command "/__mp__dp__ %arg-1%"
-				add "mineplex.builder" to arg-1's permissions
-				add "mineplex.trainee" to arg-1's permissions
-				add "mineplex.mod" to arg-1's permissions
-				add "mineplex.2fa" to arg-1's permissions
-				add "mineplex.srmod" to arg-1's permissions
 				add "mineplex.legend" to arg-1's permissions
 				add "mineplex.titan" to arg-1's permissions
 				send "&9Client Manager> &7%arg-1%'s rank has been updated to Artist!"
 				send "&9Client Manager> &7Your rank has been updated to Artist!" to arg 1
 				set arg-1 tab name to "&9&lARTIST &e%arg-1%"
 				updateRankAPI(arg-1)
-				set "rank" to "Artist" in yaml file "plugins/Mineplex-Core-Remake/playerdata/%{_uuid}%.yml"
+				setPlayerdata(arg-1, "rank", "Artist")
 			else:
 				send "&9Client Manager> &c&lInvalid rank!"
 		else if argument 2 is "MAPLEAD":
@@ -4770,11 +4892,11 @@ command /updaterank [<offline player>] [<string>]:
 				add "mineplex.2fa" to arg-1's permissions
 				add "mineplex.titan" to arg-1's permissions
 				add "mineplex.legend" to arg-1's permissions
-				send "&9Client Manager> &7%arg-1%'s rank has been updated to Maplead!"
-				send "&9Client Manager> &7Your rank has been updated to Maplead!" to arg 1
+				send "&9Client Manager> &7%arg-1%'s rank has been updated to MapLead!"
+				send "&9Client Manager> &7Your rank has been updated to MapLead!" to arg 1
 				set arg-1 tab name to "&9&lMAPLEAD &e%arg-1%"
 				updateRankAPI(arg-1)
-				set "rank" to "Maplead" in yaml file "plugins/Mineplex-Core-Remake/playerdata/%{_uuid}%.yml"
+				setPlayerdata(arg-1, "rank", "Maplead")
 			else:
 				send "&9Client Manager> &c&lInvalid rank!"
 		else if argument 2 is "JNR_DEV":
@@ -4794,7 +4916,7 @@ command /updaterank [<offline player>] [<string>]:
 				send "&9Client Manager> &7Your rank has been updated to Jr.Dev!" to arg 1
 				set arg-1 tab name to "&c&lJR.DEV &e%arg-1%"
 				updateRankAPI(arg-1)
-				set "rank" to "JrDev" in yaml file "plugins/Mineplex-Core-Remake/playerdata/%{_uuid}%.yml"
+				setPlayerdata(arg-1, "rank", "JrDev")
 			else:
 				send "&9Client Manager> &c&lInvalid rank!"
 		else if argument 2 is "DEVELOPER":
@@ -4820,7 +4942,7 @@ command /updaterank [<offline player>] [<string>]:
 				send "&9Client Manager> &7Your rank has been updated to Dev!" to arg 1
 				set arg-1 tab name to "&4&lDEV &e%arg-1%"
 				updateRankAPI(arg-1)
-				set "rank" to "Dev" in yaml file "plugins/Mineplex-Core-Remake/playerdata/%{_uuid}%.yml"
+				setPlayerdata(arg-1, "rank", "Dev")
 			else:
 				send "&9Client Manager> &c&lInvalid rank!"
 		else if argument 2 is "TWITCH":
@@ -4836,7 +4958,7 @@ command /updaterank [<offline player>] [<string>]:
 				send "&9Client Manager> &7Your rank has been updated to Twitch!" to arg 1
 				set arg-1 tab name to "&5&lTWITCH &e%arg-1%"
 				updateRankAPI(arg-1)
-				set "rank" to "Twitch" in yaml file "plugins/Mineplex-Core-Remake/playerdata/%{_uuid}%.yml"
+				setPlayerdata(arg-1, "rank", "Twitch")
 			else:
 				send "&9Client Manager> &c&lInvalid rank!"
 		else if argument 2 is "YOUTUBE":
@@ -4851,7 +4973,7 @@ command /updaterank [<offline player>] [<string>]:
 				send "&9Client Manager> &7Your rank has been updated to Youtube!" to arg 1
 				set arg-1 tab name to "&c&lYOUTUBE &e%arg-1%"
 				updateRankAPI(arg-1)
-				set "rank" to "Youtube" in yaml file "plugins/Mineplex-Core-Remake/playerdata/%{_uuid}%.yml"
+				setPlayerdata(arg-1, "rank", "Youtube")
 			else:
 				send "&9Client Manager> &c&lInvalid rank!"
 		else if argument 2 is "YT":
@@ -4866,12 +4988,18 @@ command /updaterank [<offline player>] [<string>]:
 				send "&9Client Manager> &7Your rank has been updated to YT!" to arg 1
 				set arg-1 tab name to "&5&lYT &e%arg-1%"
 				updateRankAPI(arg-1)
-				set "rank" to "Yt" in yaml file "plugins/Mineplex-Core-Remake/playerdata/%{_uuid}%.yml"
+				setPlayerdata(arg-1, "rank", "Yt")
 			else:
 				send "&9Client Manager> &c&lInvalid rank!"
 		else:
 			send "&9Client Manager> &c&lInvalid rank!"
 		rankLoad(arg-1, 2, 0)
+
+command /powerplay:
+	permission: mineplex.jrdev
+	permission message: &9Permissions> &7This requires Permission Rank [&9JR.DEV&7].
+	trigger:
+		send "&9PPC> &7SoonTM"
 
 command /shard [<offline player>] [<string>] [<string>]:
 	permission: mineplex.admin
@@ -4891,10 +5019,7 @@ command /shard [<offline player>] [<string>] [<string>]:
 						add {_num} to {mineplex.shards.%arg-1%}
 						send "&9Shard> &7You gave &e%arg-2% Shards &7to &e%arg-1%&7."
 						send "&9Shard> &e%player% &7gave you &e%arg-2% Shards&7." to arg-1
-						set {_get} to getPlayerdata(arg-1, "shards")
-						set {_cur} to {_get} parsed as a number
-						add {_num} to {_cur}
-						setPlayerdata(arg-1, "shards", "%{_cur}%")
+						addShards(arg-1, {_num})
 					else:
 						send "&9Shard> &7Invalid Shards Amount"
 
@@ -4913,10 +5038,7 @@ command /gem [<offline player>] [<string>] [<string>]:
 				else:
 					set {_num} to arg 2 parsed as an integer
 					if {_num} is an integer:
-						set {_get} to getPlayerdata(arg-1, "gems")
-						set {_cur} to {_get} parsed as a number
-						add {_num} to {_cur}
-						setPlayerdata(arg-1, "gems", "%{_cur}%")
+						addGems(arg-1, {_num})
 						send "&9Gem> &7You gave &e%arg-2% Gems &7to &e%arg-1%&7."
 						send "&9Gem> &e%player% &7gave you &e%arg-2% Gems&7." to arg-1
 					else:
@@ -5106,6 +5228,21 @@ command /reporthandle [<string>] [<string>]:
 				if {mineplex.report.open.%{_id}%} is true:
 					if {mineplex.report.hand.%{_id}%} is not set:
 						set {mineplex.report.hand.%{_id}%} to player
+						set {_sus} to {mineplex.report.player.%{_id}%} parsed as an offline player
+						set {_ip} to ip address of {_sus}
+						loop {mineplex.totalaccounts.%{_ip}%::*}:
+							add 1 to {_accounts}
+						if {_accounts} is not set:
+							set {_accounts} to 1
+						send ""
+						send "&9Report ##%{_id}%> &bReport Overview"
+						send "&9Report ##%{_id}%> &bSuspect - &6%{mineplex.report.player.%{_id}%}%"
+						send "&9Report ##%{_id}%> &bType - &6%{mineplex.report.type.%{_id}%}%"
+						send "&9Report ##%{_id}%> &bTeam - &6None"
+						send ""
+						send "&9Report ##%{_id}%> &6%{_accounts}% &btotal accounts"
+						send ""
+						send "&9Report ##%{_id}%> &bReason - &6%{mineplex.report.reason.%{_id}%}%"
 						loop all players:
 							if loop-player has permission "mineplex.trainee":
 								if {mineplex.pref.report.%loop-player%} is true:
@@ -6104,10 +6241,11 @@ function beamGo(p: player) :: number:
 	set {_t5} to last spawned entity
 	set {_player} to {_p}
 	set {_r} to randomize "abcdefgh123456789!@##$+"
+	setPlayerdata({_p}, "banned", "yes")
 	set {banned::%{_player}%} to true
 	set {banned::%{_player}%::type} to "perm"
 	set {banned::%{_player}%::reason} to "[GWEN] %{_r}%"
-	set {banned::%{_player}%::staff} to "Mineplex Anti-Cheat"
+	set {banned::%{_player}%::staff} to "Chiss"
 	set {banned::%{_player}%::when} to now
 	add "&ePunishment Type: &fOther||||&eReason: &f[GWEN] %{_r}%||||&eStaff: &fChiss||||&eDate: &f%now%" to {p.%{_player}%::history::*}
 	Beam({_p}, {_t2})
@@ -6201,20 +6339,6 @@ on consume:
 		set {fasteat.%player%} to now
 		gwenAlert((player), ("FastEat"))
 	set {fasteat.%player%} to now		
-
-on jump:
-	player's gamemode is not creative
-	set {gwenbhop1.%player%} to location of player
-	wait 0.5 seconds
-	set {gwenbhop2.%player%} to location of player
-	set {cool.%player%} to false
-	if distance between {gwenbhop1.%player%} and {gwenbhop2.%player%} is smaller than 4:
-		stop
-	else:
-		if block 1 below the player is stairs:
-			stop
-		else:
-			gwenAlert((player), ("BunnyHop/LongJump"))
 
 on damage:
 	if attacker is a player:
