@@ -4194,42 +4194,7 @@ command /givestat [<offline player>] [<string>] [<string>] [<string>]:
 		else:
 			send "&9Stats> &e/givestat (player) (stat) (amount)"
 
-command /stats [<offline player>] [<string>]:
-	trigger:
-		if arg 1 is not set:
-			set {_p} to player
-			set {_good} to true
-		else:
-			if arg 1 is online:
-				set {_p} to arg 1
-				set {_good} to true
-			else:
-				send "&9Online Player Search> &e0 &7matches for [&e%arg-1%&7]."
-		if {_good} is true:
-			open chest with 5 rows named "%{_p}%'s Stats" to player
-			wait 1 tick
-			set {_tm} to {mineplex.time.%{_p}%}
-			if {_tm} is less than 60:
-				set {_global.time} to "%{_final}%.0 Seconds"
-			else if {_tm} is less than 3600:
-				set {_final} to {_tm} / 60
-				set {_global.time} to "%{_final}% Minutes"
-			else if {_tm} is less than 86400:
-				set {_final} to {_tm} / 3600
-				set {_global.time} to "%{_final}% Hours"
-			else if {_tm} is less than 604800:
-				set {_final} to {_tm} / 86400
-				set {_global.time} to "%{_final}% Days"
-			else:
-				set {_final} to {_tm} / 604800
-				set {_global.time} to "%{_final}% Weeks"
-			set {_global.gems} to getPlayerdata({_p}, "stats.global.gems")
-			set {_global.games} to getPlayerdata({_p}, "stats.global.games")
-			set {_global.dailyr} to getPlayerdata({_p}, "stats.global.dailyr")
-			set {_global.voted} to getPlayerdata({_p}, "stats.global.voted")
-			set {_global.chests} to getPlayerdata({_p}, "stats.global.chests")
-			format slot 2 of player with emerald named "&a&lGlobal" with lore "||&eGems Earned: &f%{_global.gems}%|| ||&eGames Played: &f%{_global.games}%||&eTime In Game: &f%{_global.time}%|| ||&eDaily Rewards: &f%{_global.dailyr}%||&eTimes Voted: &f%{_global.voted}%|| ||&eChests Opened: &f%{_global.chests}%" to be unstealable
-		
+
 command /mcr:
 	trigger:
 		send "&9Plugin> &7Mineplex Core"
@@ -5381,9 +5346,9 @@ command /message [<player>] [<text>]:
 					send "&d%arg-1% is often AFK or minimized, due to plugin development."
 					send "&dPlease be patient if they do not reply instantly."
 			else:
-				send "&9Message> &cErr...something went wrong?"
+				send "&9Message> &7Cat got your tongue?"
 		else:
-			send "&9Message> &cErr...something went wrong?"
+			send "&9Message> &7You didn't specify someone to message!"
 
 
 command /ping:
@@ -6035,8 +6000,15 @@ command /p [<offline player>] [<text>]:
 
 #Prefs System
  
+#Prefs System
+ 		
 function prefsSystem(p: player , t: number) :: number:
 	if {_t} is 1:
+		if {mineplex.pref.hg.%{_p}%} is true:
+			set {mineplex.pref.hg.%{_p}%} to false
+		else:
+			set {mineplex.pref.hg.%{_p}%} to true
+	else if {_t} is 2:
 		if {mineplex.pref.hpv.%{_p}%} is true:
 			set {mineplex.pref.hpv.%{_p}%} to false
 			hide all players from {_p}
@@ -6050,162 +6022,500 @@ function prefsSystem(p: player , t: number) :: number:
 				if loop-player does not have permission "mineplex.admin":
 					hide {%{_p}%.vanishlist::*} from all players
 					delete {%{_p}%.vanishlist::*}
-	else if {_t} is 2:
+	else if {_t} is 3:
 		if {mineplex.pref.pc.%{_p}%} is true:
 			set {mineplex.pref.pc.%{_p}%} to false
 		else:
 			set {mineplex.pref.pc.%{_p}%} to true
-	else if {_t} is 3:
+	else if {_t} is 4:
 		if {mineplex.pref.pm.%{_p}%} is true:
 			set {mineplex.pref.pm.%{_p}%} to false
 		else:
 			set {mineplex.pref.pm.%{_p}%} to true
-	else if {_t} is 4:
+	else if {_t} is 5:
 		if {mineplex.pref.gwen.%{_p}%} is true:
 			set {mineplex.pref.gwen.%{_p}%} to false
 		else:
 			set {mineplex.pref.gwen.%{_p}%} to true
-	else if {_t} is 5:
+	else if {_t} is 6:
 		if {mineplex.pref.report.%{_p}%} is true:
 			set {mineplex.pref.report.%{_p}%} to false
 		else:
 			set {mineplex.pref.report.%{_p}%} to true
-	else if {_t} is 6:
+	else if {_t} is 7:
 		if {mineplex.pref.ff.%{_p}%} is true:
 			set {mineplex.pref.ff.%{_p}%} to false
 		else:
 			set {mineplex.pref.ff.%{_p}%} to true
-	else if {_t} is 7:
+	else if {_t} is 8:
 		if {mineplex.ff.%{_p}%} is true:
 			set {mineplex.ff.%{_p}%} to false
 			delete {mineplex.ff.list::%{_p}%}
 		else:
 			set {mineplex.ff.%{_p}%} to true
 			set {mineplex.ff.list::%{_p}%} to true
- 
+	else if {_t} is 9:
+		if {mineplex.pref.rm.%{_p}%} is true:
+			set {mineplex.pref.rm.%{_p}%} to false
+		else:
+			set {mineplex.pref.rm.%{_p}%} to true
+	else if {_t} is 10:
+		if {mineplex.pref.aj.%{_p}%} is true:
+			set {mineplex.pref.aj.%{_p}%} to false
+		else:
+			set {mineplex.pref.aj.%{_p}%} to true
+	else if {_t} is 11:
+		if {mineplex.pref.daw.%{_p}%} is true:
+			set {mineplex.pref.daw.%{_p}%} to false
+		else:
+			set {mineplex.pref.daw.%{_p}%} to true
+	else if {_t} is 12:
+		if {mineplex.pref.cj.%{_p}%} is true:
+			set {mineplex.pref.cj.%{_p}%} to false
+		else:
+			set {mineplex.pref.cj.%{_p}%} to true
+	else if {_t} is 13:
+		if {mineplex.pref.sct.%{_p}%} is true:
+			set {mineplex.pref.sct.%{_p}%} to false
+		else:
+			set {mineplex.pref.sct.%{_p}%} to true
+	else if {_t} is 14:
+		if {mineplex.pref.hm.%{_p}%} is true:
+			set {mineplex.pref.hm.%{_p}%} to false
+		else:
+			set {mineplex.pref.hm.%{_p}%} to true
+	else if {_t} is 15:
+		if {mineplex.pref.pr.%{_p}%} is true:
+			set {mineplex.pref.pr.%{_p}%} to false
+		else:
+			set {mineplex.pref.pr.%{_p}%} to true
+	else if {_t} is 16:
+		if {mineplex.pref.spfr.%{_p}%} is true:
+			set {mineplex.pref.spfr.%{_p}%} to false
+		else:
+			set {mineplex.pref.spfr.%{_p}%} to true
+	else if {_t} is 17:
+		if {mineplex.pref.dfg.%{_p}%} is true:
+			set {mineplex.pref.dfg.%{_p}%} to false
+		else:
+			set {mineplex.pref.dfg.%{_p}%} to true
+	else if {_t} is 18:
+		if {mineplex.pref.sci.%{_p}%} is true:
+			set {mineplex.pref.sci.%{_p}%} to false
+		else:
+			set {mineplex.pref.sci.%{_p}%} to true
+	else if {_t} is 19:
+		if {mineplex.pref.dpg.%{_p}%} is true:
+			set {mineplex.pref.dpg.%{_p}%} to false
+		else:
+			set {mineplex.pref.dpg.%{_p}%} to true
+	else if {_t} is 20:
+		if {mineplex.pref.hif.%{_p}%} is true:
+			set {mineplex.pref.hif.%{_p}%} to false
+		else:
+			set {mineplex.pref.hif.%{_p}%} to true
+			
+#Prefs
+function profile_system(arg1: text , arg2: text , p: player, p2: player) :: number:
+	set {_wither} to "MHF_WSkeleton" parsed as a player
+	if {_arg1} is "menu":
+		if {_arg2} is "profile":
+			wait 2 ticks
+			open chest with 3 rows named "My Profile" to {_p}
+			wait 4 ticks
+			format slot 11 of {_p} with {_p}'s skull named "&eStats and Achievements" with lore "&f||&fView your Statistics and Achievements||&ffor all of the games on Mineplex!||&f||&fType &a/stats &fto access this anywhere!" to run [profile_system("menu", "stats", {_p}, {_p2})]
+			format slot 13 of {_p} with redstone comparator item named "&ePreferences" with lore "&f||&fSet your preferences to your liking||&fso you can enjoy the game more!||&f||&fType &a
+			&fto access this anywhere!" to run [profile_system("menu", "prefs", {_p}, {_p2})]
+			format slot 15 of {_p} with glistering melon named "&eMineplex Player Server" with lore "&f||&fCreate a server where you are the Host.||&fYou can Choose the game, map and much more!||&f||&fType &a/mps &fto access this anywhere!" to be unstealable
+		if {_arg2} is "prefs":
+			if {_p} has permission "mineplex.trainee":
+				wait 2 ticks
+				open chest with 6 rows named "My Preferences" to {_p}
+				wait 4 ticks
+				format slot 0 of {_p} with light blue stained glass pane named "&f" to be unstealable
+				format slot 1 of {_p} with light blue stained glass pane named "&f" to be unstealable
+				format slot 2 of {_p} with light blue stained glass pane named "&f" to be unstealable
+				format slot 3 of {_p} with light blue stained glass pane named "&f" to be unstealable
+				format slot 4 of {_p} with light blue stained glass pane named "&f" to be unstealable
+				format slot 5 of {_p} with light blue stained glass pane named "&f" to be unstealable
+				format slot 6 of {_p} with light blue stained glass pane named "&f" to be unstealable
+				format slot 7 of {_p} with light blue stained glass pane named "&f" to be unstealable
+				format slot 8 of {_p} with light blue stained glass pane named "&f" to be unstealable
+				format slot 9 of {_p} with light blue stained glass pane named "&f" to be unstealable
+				format slot 17 of {_p} with light blue stained glass pane named "&f" to be unstealable
+				format slot 18 of {_p} with light blue stained glass pane named "&f" to be unstealable
+				format slot 26 of {_p} with light blue stained glass pane named "&f" to be unstealable
+				format slot 27 of {_p} with light blue stained glass pane named "&f" to be unstealable
+				format slot 35 of {_p} with light blue stained glass pane named "&f" to be unstealable
+				format slot 36 of {_p} with light blue stained glass pane named "&f" to be unstealable
+				format slot 44 of {_p} with light blue stained glass pane named "&f" to be unstealable
+				format slot 45 of {_p} with light blue stained glass pane named "&f" to be unstealable
+				format slot 46 of {_p} with light blue stained glass pane named "&f" to be unstealable
+				format slot 47 of {_p} with light blue stained glass pane named "&f" to be unstealable
+				format slot 48 of {_p} with light blue stained glass pane named "&f" to be unstealable
+				format slot 49 of {_p} with light blue stained glass pane named "&f" to be unstealable
+				format slot 50 of {_p} with light blue stained glass pane named "&f" to be unstealable
+				format slot 51 of {_p} with light blue stained glass pane named "&f" to be unstealable
+				format slot 52 of {_p} with light blue stained glass pane named "&f" to be unstealable
+				format slot 53 of {_p} with light blue stained glass pane named "&f" to be unstealable
+				format slot 19 of {_p} with paper named "&eUser Preferences" to run [profile_system("menu", "user", {_p}, {_p2})]
+				format slot 21 of {_p} with diamond named "&eExclusive Preferences" to run [profile_system("menu", "staff", {_p}, {_p2})]
+				format slot 23 of {_p} with redstone comparator item named "&eGame Mechanic Preferences" to run [profile_system("menu", "game", {_p}, {_p2})]
+				format slot 25 of {_p} with compass named "&eMiscellaneous Preferences" to run [profile_system("menu", "misc", {_p}, {_p2})]
+				format slot 31 of {_p} with red flower named "&eSocial Preferences" to run [profile_system("menu", "social", {_p}, {_p2})]
+			else:
+				wait 2 ticks
+				open chest with 5 rows named "My Preferences" to {_p}
+				wait 4 ticks
+				format slot 0 of {_p} with light blue stained glass pane named "&f" to be unstealable
+				format slot 1 of {_p} with light blue stained glass pane named "&f" to be unstealable
+				format slot 2 of {_p} with light blue stained glass pane named "&f" to be unstealable
+				format slot 3 of {_p} with light blue stained glass pane named "&f" to be unstealable
+				format slot 4 of {_p} with light blue stained glass pane named "&f" to be unstealable
+				format slot 5 of {_p} with light blue stained glass pane named "&f" to be unstealable
+				format slot 6 of {_p} with light blue stained glass pane named "&f" to be unstealable
+				format slot 7 of {_p} with light blue stained glass pane named "&f" to be unstealable
+				format slot 8 of {_p} with light blue stained glass pane named "&f" to be unstealable
+				format slot 9 of {_p} with light blue stained glass pane named "&f" to be unstealable
+				format slot 17 of {_p} with light blue stained glass pane named "&f" to be unstealable
+				format slot 18 of {_p} with light blue stained glass pane named "&f" to be unstealable
+				format slot 26 of {_p} with light blue stained glass pane named "&f" to be unstealable
+				format slot 27 of {_p} with light blue stained glass pane named "&f" to be unstealable
+				format slot 35 of {_p} with light blue stained glass pane named "&f" to be unstealable
+				format slot 36 of {_p} with light blue stained glass pane named "&f" to be unstealable
+				format slot 37 of {_p} with light blue stained glass pane named "&f" to be unstealable
+				format slot 38 of {_p} with light blue stained glass pane named "&f" to be unstealable
+				format slot 39 of {_p} with light blue stained glass pane named "&f" to be unstealable
+				format slot 40 of {_p} with light blue stained glass pane named "&f" to be unstealable
+				format slot 41 of {_p} with light blue stained glass pane named "&f" to be unstealable
+				format slot 42 of {_p} with light blue stained glass pane named "&f" to be unstealable
+				format slot 43 of {_p} with light blue stained glass pane named "&f" to be unstealable
+				format slot 44 of {_p} with light blue stained glass pane named "&f" to be unstealable
+				format slot 19 of {_p} with paper named "&eUser Preferences" to run [profile_system("menu", "user", {_p}, {_p2})]
+				format slot 21 of {_p} with redstone comparator item named "&eGame Mechanic Preferences" to run [profile_system("menu", "game", {_p}, {_p2})]
+				format slot 23 of {_p} with compass named "&eMiscellaneous Preferences" to run [profile_system("menu", "misc", {_p}, {_p2})]
+				format slot 25 of {_p} with red flower named "&eSocial Preferences" to run [profile_system("menu", "social", {_p}, {_p2})]
+		if {_arg2} is "user":
+			wait 2 tick
+			open chest with 6 rows named "User Preferences" to {_p}
+			wait 4 tick
+			format slot 0 of {_p} with bed named "← Go Back" to run [profile_system("menu", "prefs", {_p}, {_p2})]
+			format slot 1 of {_p} with light blue stained glass pane named "&f" to be unstealable
+			format slot 2 of {_p} with light blue stained glass pane named "&f" to be unstealable
+			format slot 3 of {_p} with light blue stained glass pane named "&f" to be unstealable
+			format slot 4 of {_p} with light blue stained glass pane named "&f" to be unstealable
+			format slot 5 of {_p} with light blue stained glass pane named "&f" to be unstealable
+			format slot 6 of {_p} with light blue stained glass pane named "&f" to be unstealable
+			format slot 7 of {_p} with light blue stained glass pane named "&f" to be unstealable
+			format slot 8 of {_p} with light blue stained glass pane named "&f" to be unstealable
+			format slot 9 of {_p} with light blue stained glass pane named "&f" to be unstealable
+			format slot 17 of {_p} with light blue stained glass pane named "&f" to be unstealable
+			format slot 18 of {_p} with light blue stained glass pane named "&f" to be unstealable
+			format slot 26 of {_p} with light blue stained glass pane named "&f" to be unstealable
+			format slot 27 of {_p} with light blue stained glass pane named "&f" to be unstealable
+			format slot 35 of {_p} with light blue stained glass pane named "&f" to be unstealable
+			format slot 36 of {_p} with light blue stained glass pane named "&f" to be unstealable
+			format slot 44 of {_p} with light blue stained glass pane named "&f" to be unstealable
+			format slot 45 of {_p} with light blue stained glass pane named "&f" to be unstealable
+			format slot 46 of {_p} with light blue stained glass pane named "&f" to be unstealable
+			format slot 47 of {_p} with light blue stained glass pane named "&f" to be unstealable
+			format slot 48 of {_p} with light blue stained glass pane named "&f" to be unstealable
+			format slot 49 of {_p} with light blue stained glass pane named "&f" to be unstealable
+			format slot 50 of {_p} with light blue stained glass pane named "&f" to be unstealable
+			format slot 51 of {_p} with light blue stained glass pane named "&f" to be unstealable
+			format slot 52 of {_p} with light blue stained glass pane named "&f" to be unstealable
+			format slot 53 of {_p} with light blue stained glass pane named "&f" to be unstealable
+			if {mineplex.pref.hg.%{_p}%} is true:
+				format slot 10 of {_p} with fire charge named "&aHub Games" with lore "&aEnabled||&f||&fClick to Disable||&f" to run [prefsSystem({_p}, 1)]->[profile_system("menu", "user", {_p}, {_p2})]
+				format slot 19 of {_p} with light green dye named "&aHub Games" with lore "&aEnabled||&f||&fClick to Disable" to run [prefsSystem({_p}, 1)]->[profile_system("menu", "user", {_p}, {_p2})]
+			else:
+				format slot 10 of {_p} with fire charge named "&cHub Games" with lore "&cDisabled||&f||&fClick to Enable||&f" to run [prefsSystem({_p}, 1)]->[profile_system("menu", "user", {_p}, {_p2})]
+				format slot 19 of {_p} with gray dye named "&cHub Games" with lore "&cDisabled||&f||&fClick to Enable" to run [prefsSystem({_p}, 1)]->[profile_system("menu", "user", {_p}, {_p2})]
+			if {mineplex.pref.hpv.%{_p}%} is true:
+				format slot 12 of {_p} with eye of ender named "&aHub Player Visibility" with lore "&aEnabled||&f||&fClick to Disable||&f" to run [prefsSystem({_p}, 2)]->[profile_system("menu", "user", {_p}, {_p2})]
+				format slot 21 of {_p} with light green dye named "&aHub Player Visibility" with lore "&aEnabled||&f||&fClick to Disable" to run [prefsSystem({_p}, 2)]->[profile_system("menu", "user", {_p}, {_p2})]
+			else:
+				format slot 12 of {_p} with eye of ender named "&cHub Player Visibility" with lore "&cDisabled||&f||&fClick to Enable||&f" to run [prefsSystem({_p}, 2)]->[profile_system("menu", "user", {_p}, {_p2})]
+				format slot 21 of {_p} with gray dye named "&cHub Player Visibility" with lore "&cDisabled||&f||&fClick to Enable||&f" to run [prefsSystem({_p}, 2)]->[profile_system("menu", "user", {_p}, {_p2})]
+			if {mineplex.pref.pc.%{_p}%} is true:
+				format slot 14 of {_p} with paper named "&aPlayer Chat" with lore "&aEnabled||&f||&fClick to Disable||&f" to run [prefsSystem({_p}, 3)]->[profile_system("menu", "user", {_p}, {_p2})]
+				format slot 23 of {_p} with light green dye named "&aPlayer Chat" with lore "&aEnabled||&f||&fClick to Disable" to run [prefsSystem({_p}, 3)]->[profile_system("menu", "user", {_p}, {_p2})]
+			else:
+				format slot 14 of {_p} with paper named "&cPlayer Chat" with lore "&cDisabled||&f||&fClick to Enable||&f" to run [prefsSystem({_p}, 3)]->[profile_system("menu", "user", {_p}, {_p2})]
+				format slot 23 of {_p} with gray dye named "&cPlayer Chat" with lore "&cDisabled||&f||&fClick to Enable" to run [prefsSystem({_p}, 3)]->[profile_system("menu", "user", {_p}, {_p2})]
+			if {mineplex.pref.pm.%{_p}%} is true:
+				format slot 16 of {_p} with map named "&aPrivate Messaging" with lore "&aEnabled||&f||&fClick to Disable||&f" to run [prefsSystem({_p}, 4)]->[profile_system("menu", "user", {_p}, {_p2})]
+				format slot 25 of {_p} with light green dye named "&aPrivate Messaging" with lore "&aEnabled||&f||&fClick to Disable" to run [prefsSystem({_p}, 4)]->[profile_system("menu", "user", {_p}, {_p2})]
+			else:
+				format slot 16 of {_p} with map named "&CPrivate Messaging" with lore "&cDisabled||&f||&fClick to Enable||&f" to run [prefsSystem({_p}, 4)]->[profile_system("menu", "user", {_p}, {_p2})]
+				format slot 25 of {_p} with gray dye named "&cPrivate Messaging" with lore "&cDisabled||&f||&fClick to Enable" to run [prefsSystem({_p}, 4)]->[profile_system("menu", "user", {_p}, {_p2})]
+			if {mineplex.pref.rm.%{_p}%} is true:
+				format slot 31 of {_p} with command block named "&aSend random messages" with lore "&aEnabled||&f||&fClick to Disable||&f||&7Got nothing to say? We got you covered!" to run [prefsSystem({_p}, 9)]->[profile_system("menu", "user", {_p}, {_p2})]
+				format slot 40 of {_p} with light green dye named "&aSend random messages" with lore "&aEnabled||&f||&fClick to Disable" to run [prefsSystem({_p}, 9)]->[profile_system("menu", "user", {_p}, {_p2})]
+			else:
+				format slot 31 of {_p} with command block named "&cSend random messages" with lore "&cDisabled||&f||&fClick to Enable||&f||&7Got nothing to say? We got you covered!" to run [prefsSystem({_p}, 9)]->[profile_system("menu", "user", {_p}, {_p2})]
+				format slot 40 of {_p} with gray dye named "&cSend random messages" with lore "&cDisabled||&f||&fClick to Enable" to run [prefsSystem({_p}, 9)]->[profile_system("menu", "user", {_p}, {_p2})]
+		if {_arg2} is "game":
+			wait 2 tick
+			open chest with 6 rows named "Game Mechanic Preference" to {_p}
+			wait 4 tick
+			format slot 0 of {_p} with bed named "← Go Back" to run [profile_system("menu", "prefs", {_p}, {_p2})]
+			format slot 1 of {_p} with light blue stained glass pane named "&f" to be unstealable
+			format slot 2 of {_p} with light blue stained glass pane named "&f" to be unstealable
+			format slot 3 of {_p} with light blue stained glass pane named "&f" to be unstealable
+			format slot 4 of {_p} with light blue stained glass pane named "&f" to be unstealable
+			format slot 5 of {_p} with light blue stained glass pane named "&f" to be unstealable
+			format slot 6 of {_p} with light blue stained glass pane named "&f" to be unstealable
+			format slot 7 of {_p} with light blue stained glass pane named "&f" to be unstealable
+			format slot 8 of {_p} with light blue stained glass pane named "&f" to be unstealable
+			format slot 9 of {_p} with light blue stained glass pane named "&f" to be unstealable
+			format slot 17 of {_p} with light blue stained glass pane named "&f" to be unstealable
+			format slot 18 of {_p} with light blue stained glass pane named "&f" to be unstealable
+			format slot 26 of {_p} with light blue stained glass pane named "&f" to be unstealable
+			format slot 27 of {_p} with light blue stained glass pane named "&f" to be unstealable
+			format slot 35 of {_p} with light blue stained glass pane named "&f" to be unstealable
+			format slot 36 of {_p} with light blue stained glass pane named "&f" to be unstealable
+			format slot 44 of {_p} with light blue stained glass pane named "&f" to be unstealable
+			format slot 45 of {_p} with light blue stained glass pane named "&f" to be unstealable
+			format slot 46 of {_p} with light blue stained glass pane named "&f" to be unstealable
+			format slot 47 of {_p} with light blue stained glass pane named "&f" to be unstealable
+			format slot 48 of {_p} with light blue stained glass pane named "&f" to be unstealable
+			format slot 49 of {_p} with light blue stained glass pane named "&f" to be unstealable
+			format slot 50 of {_p} with light blue stained glass pane named "&f" to be unstealable
+			format slot 51 of {_p} with light blue stained glass pane named "&f" to be unstealable
+			format slot 52 of {_p} with light blue stained glass pane named "&f" to be unstealable
+			format slot 53 of {_p} with light blue stained glass pane named "&f" to be unstealable
+			if {mineplex.pref.aj.%{_p}%} is true:
+				format slot 11 of {_p} with diamond sword named "&aAuto Join Next Game" with lore "&aEnabled||&f||&fClick to Disable||&f||&7Feel like playing again?||&7Enable this, and when you're you||&7a 15 second timer will start||&7when it ends, it'll send you||&7to another game!" to run [prefsSystem({_p}, 10)]->[profile_system("menu", "game", {_p}, {_p2})]
+				format slot 20 of {_p} with light green dye named "&aAuto Join Next Game" with lore "&aEnabled||&f||&fClick to Disable||" to run [prefsSystem({_p}, 10)]->[profile_system("menu", "game", {_p}, {_p2})]
+			else:
+				format slot 11 of {_p} with diamond sword named "&cAuto Join Next Game" with lore "&cDisabled||&f||&fClick to Enable||&f||&7Feel like playing again?||&7Enable this, and when you're you||&7a 15 second timer will start||&7when it ends, it'll send you||&7to another game!" to run [prefsSystem({_p}, 10)]->[profile_system("menu", "game", {_p}, {_p2})]
+				format slot 20 of {_p} with gray dye named "&cAuto Join Next Game" with lore "&cDisabled||&f||&fClick to Enable" to run [prefsSystem({_p}, 10)]->[profile_system("menu", "game", {_p}, {_p2})]
+			if {mineplex.pref.daw.%{_p}%} is true:
+				format slot 13 of {_p} with barrier named "&aDisable Automatic Warning" with lore "&aEnabled||&f||&fClick to Disable||&f||&7Know what you're doing?||&7Disable this to not receive||&7a message warning you about Auto-Join" to run [prefsSystem({_p}, 11)]->[profile_system("menu", "game", {_p}, {_p2})]
+				format slot 22 of {_p} with light green dye named "&aDisable Automatic Warning" with lore "&aEnabled||&f||&fClick to Disable" to run [prefsSystem({_p}, 11)]->[profile_system("menu", "game", {_p}, {_p2})]
+			else:
+				format slot 13 of {_p} with barrier named "&cDisable Automatic Warning" with lore "&cDisabled||&f||&fClick to Enable||&f||&7Know what you're doing?||&7Disable this to not receive||&7a message warning you about Auto-Join" to run [prefsSystem({_p}, 11)]->[profile_system("menu", "game", {_p}, {_p2})]
+				format slot 22 of {_p} with gray dye named "&cDisable Automatic Warning" with lore "&cDisabled||&f||&fClick to Enable" to run [prefsSystem({_p}, 11)]->[profile_system("menu", "game", {_p}, {_p2})]
+			if {mineplex.pref.cj.%{_p}%} is true:
+				format slot 15 of {_p} with clock named "&aCountdown to Join" with lore "&aEnabled||&f||&fClick to Disable||&f||&7See that fancy text when you're out?||&7If you click it, and this is enabled||&7a 15 second time will countdown||&7until you are sent to a new game" to run [prefsSystem({_p}, 12)]->[profile_system("menu", "game", {_p}, {_p2})]
+				format slot 24 of {_p} with light green dye named "&aCountdown to Join" with lore "&aEnabled||&f||&fClick to Disable" to run [prefsSystem({_p}, 12)]->[profile_system("menu", "game", {_p}, {_p2})]
+			else:
+				format slot 15 of {_p} with clock named "&cCountdown to Join" with lore "&cDisabled||&f||&fClick to Enable||&f||&7See that fancy text when you're out?||&7If you click it, and this is enabled||&7a 15 second time will countdown||&7until you are sent to a new game" to run [prefsSystem({_p}, 12)]->[profile_system("menu", "game", {_p}, {_p2})]
+				format slot 24 of {_p} with gray dye named "&cCountdown to Join" with lore "&cDisabled||&f||&fClick to Enable" to run [prefsSystem({_p}, 12)]->[profile_system("menu", "game", {_p}, {_p2})]
+		if {_arg2} is "misc":
+			wait 2 tick
+			open chest with 6 rows named "Miscellaneous Preference" to {_p}
+			wait 4 tick
+			format slot 0 of {_p} with bed named "← Go Back" to run [profile_system("menu", "prefs", {_p}, {_p2})]
+			format slot 1 of {_p} with light blue stained glass pane named "&f" to be unstealable
+			format slot 2 of {_p} with light blue stained glass pane named "&f" to be unstealable
+			format slot 3 of {_p} with light blue stained glass pane named "&f" to be unstealable
+			format slot 4 of {_p} with light blue stained glass pane named "&f" to be unstealable
+			format slot 5 of {_p} with light blue stained glass pane named "&f" to be unstealable
+			format slot 6 of {_p} with light blue stained glass pane named "&f" to be unstealable
+			format slot 7 of {_p} with light blue stained glass pane named "&f" to be unstealable
+			format slot 8 of {_p} with light blue stained glass pane named "&f" to be unstealable
+			format slot 9 of {_p} with light blue stained glass pane named "&f" to be unstealable
+			format slot 17 of {_p} with light blue stained glass pane named "&f" to be unstealable
+			format slot 18 of {_p} with light blue stained glass pane named "&f" to be unstealable
+			format slot 26 of {_p} with light blue stained glass pane named "&f" to be unstealable
+			format slot 27 of {_p} with light blue stained glass pane named "&f" to be unstealable
+			format slot 35 of {_p} with light blue stained glass pane named "&f" to be unstealable
+			format slot 36 of {_p} with light blue stained glass pane named "&f" to be unstealable
+			format slot 44 of {_p} with light blue stained glass pane named "&f" to be unstealable
+			format slot 45 of {_p} with light blue stained glass pane named "&f" to be unstealable
+			format slot 46 of {_p} with light blue stained glass pane named "&f" to be unstealable
+			format slot 47 of {_p} with light blue stained glass pane named "&f" to be unstealable
+			format slot 48 of {_p} with light blue stained glass pane named "&f" to be unstealable
+			format slot 49 of {_p} with light blue stained glass pane named "&f" to be unstealable
+			format slot 50 of {_p} with light blue stained glass pane named "&f" to be unstealable
+			format slot 51 of {_p} with light blue stained glass pane named "&f" to be unstealable
+			format slot 52 of {_p} with light blue stained glass pane named "&f" to be unstealable
+			format slot 53 of {_p} with light blue stained glass pane named "&f" to be unstealable
+			if {mineplex.pref.sct.%{_p}%} is true:
+				format slot 12 of {_p} with iron sword named "&aShow Clan Tips" with lore "&aEnabled||&f||&fClick to Disable||&f||&f" to run [prefsSystem({_p}, 13)]->[profile_system("menu", "misc", {_p}, {_p2})]
+				format slot 21 of {_p} with light green dye named "&aShow Clan Tips" with lore "&aEnabled||&f||&fClick to Disable" to run [prefsSystem({_p}, 13)]->[profile_system("menu", "misc", {_p}, {_p2})]
+			else:
+				format slot 12 of {_p} with iron sword named "&cShow Clan Tips" with lore "&cDisabled||&f||&fClick to Enable||&f||&f" to run [prefsSystem({_p}, 13)]->[profile_system("menu", "misc", {_p}, {_p2})]
+				format slot 21 of {_p} with gray dye named "&cShow Clan TIps" with lore "&cDisabled||&f||&fClick to Enable" to run [prefsSystem({_p}, 13)]->[profile_system("menu", "misc", {_p}, {_p2})]
+			if {mineplex.pref.hm.%{_p}%} is true:
+				format slot 14 of {_p} with note block named "&aHub Music" with lore "&aEnabled||&f||&fClick to Disable||&f" to run [prefsSystem({_p}, 14)]->[profile_system("menu", "misc", {_p}, {_p2})]
+				format slot 23 of {_p} with light green dye named "&aHub Music" with lore "&aEnabled||&f||&fClick to Disable" to run [prefsSystem({_p}, 14)]->[profile_system("menu", "misc", {_p}, {_p2})]
+			else:
+				format slot 14 of {_p} with note block named "&cHub Music" with lore "&cDisabled||&f||&fClick to Enable||&f" to run [prefsSystem({_p}, 14)]->[profile_system("menu", "misc", {_p}, {_p2})]
+				format slot 23 of {_p} with gray dye named "&cHub Music" with lore "&cDisabled||&f||&fClick to Enable" to run [prefsSystem({_p}, 14)]->[profile_system("menu", "misc", {_p}, {_p2})]
+		if {_arg2} is "social":
+			wait 2 tick
+			open chest with 6 rows named "Social Preferences" to {_p}
+			wait 4 tick
+			format slot 0 of {_p} with bed named "← Go Back" to run [profile_system("menu", "prefs", {_p}, {_p2})]
+			format slot 1 of {_p} with light blue stained glass pane named "&f" to be unstealable
+			format slot 2 of {_p} with light blue stained glass pane named "&f" to be unstealable
+			format slot 3 of {_p} with light blue stained glass pane named "&f" to be unstealable
+			format slot 4 of {_p} with light blue stained glass pane named "&f" to be unstealable
+			format slot 5 of {_p} with light blue stained glass pane named "&f" to be unstealable
+			format slot 6 of {_p} with light blue stained glass pane named "&f" to be unstealable
+			format slot 7 of {_p} with light blue stained glass pane named "&f" to be unstealable
+			format slot 8 of {_p} with light blue stained glass pane named "&f" to be unstealable
+			format slot 9 of {_p} with light blue stained glass pane named "&f" to be unstealable
+			format slot 17 of {_p} with light blue stained glass pane named "&f" to be unstealable
+			format slot 18 of {_p} with light blue stained glass pane named "&f" to be unstealable
+			format slot 26 of {_p} with light blue stained glass pane named "&f" to be unstealable
+			format slot 27 of {_p} with light blue stained glass pane named "&f" to be unstealable
+			format slot 35 of {_p} with light blue stained glass pane named "&f" to be unstealable
+			format slot 36 of {_p} with light blue stained glass pane named "&f" to be unstealable
+			format slot 44 of {_p} with light blue stained glass pane named "&f" to be unstealable
+			format slot 45 of {_p} with light blue stained glass pane named "&f" to be unstealable
+			format slot 46 of {_p} with light blue stained glass pane named "&f" to be unstealable
+			format slot 47 of {_p} with light blue stained glass pane named "&f" to be unstealable
+			format slot 48 of {_p} with light blue stained glass pane named "&f" to be unstealable
+			format slot 49 of {_p} with light blue stained glass pane named "&f" to be unstealable
+			format slot 50 of {_p} with light blue stained glass pane named "&f" to be unstealable
+			format slot 51 of {_p} with light blue stained glass pane named "&f" to be unstealable
+			format slot 52 of {_p} with light blue stained glass pane named "&f" to be unstealable
+			format slot 53 of {_p} with light blue stained glass pane named "&f" to be unstealable
+			if {mineplex.pref.pr.%{_p}%} is true:
+				format slot 10 of {_p} with human head named "&aParty Requests" with lore "&aEnabled||&f||&fClick to Disable||&f" to run [prefsSystem({_p}, 15)]->[profile_system("menu", "social", {_p}, {_p2})]
+				format slot 19 of {_p} with light green dye named "&aParty Requests" with lore "&aEnabled||&f||&fClick to Disable" to run [prefsSystem({_p}, 15)]->[profile_system("menu", "social", {_p}, {_p2})]
+			else:
+				format slot 10 of {_p} with human head named "&cParty Requests" with lore "&cDisabled||&f||&fClick to Enable||&f" to run [prefsSystem({_p}, 15)]->[profile_system("menu", "social", {_p}, {_p2})]
+				format slot 19 of {_p} with gray dye named "&cParty Requests" with lore "&cDisabled||&f||&fClick to Enable" to run [prefsSystem({_p}, 15)]->[profile_system("menu", "social", {_p}, {_p2})]
+			if {mineplex.pref.spfr.%{_p}%} is true:
+				format slot 12 of {_p} with red flower named "&aShow Pending Friend Requests" with lore "&aEnabled||&f||&fClick to Disable||&f" to run [prefsSystem({_p}, 16)]->[profile_system("menu", "social", {_p}, {_p2})]
+				format slot 21 of {_p} with light green dye named "&aShow Pending Friend Requests" with lore "&aEnabled||&f||&fClick to Disable" to run [prefsSystem({_p}, 16)]->[profile_system("menu", "social", {_p}, {_p2})]
+			else:
+				format slot 12 of {_p} with red flower named "&cShow Pending Friend Requests" with lore "&cDisabled||&f||&fClick to Enable||&f" to run [prefsSystem({_p}, 16)]->[profile_system("menu", "social", {_p}, {_p2})]
+				format slot 21 of {_p} with gray dye named "&cShow Pending Friend Requests" with lore "&cDisabled||&f||&fClick to Enable" to run [prefsSystem({_p}, 16)]->[profile_system("menu", "social", {_p}, {_p2})]
+			if {mineplex.pref.dfg.%{_p}%} is true:
+				format slot 14 of {_p} with chest named "&aDisplay Friend GUI" with lore "&aEnabled||&f||&fClick to Disable||&f" to run [prefsSystem({_p}, 17)]->[profile_system("menu", "social", {_p}, {_p2})]
+				format slot 23 of {_p} with light green dye named "&aDisplay Friend GUI" with lore "&aEnabled||&f||&fClick to Disable" to run [prefsSystem({_p}, 17)]->[profile_system("menu", "social", {_p}, {_p2})]
+			else:
+				format slot 14 of {_p} with chest named "&cDisplay Friend GUI" with lore "&cDisabled||&f||&fClick to Enable||&f" to run [prefsSystem({_p}, 17)]->[profile_system("menu", "social", {_p}, {_p2})]
+				format slot 23 of {_p} with gray dye named "&cDisplay Friend GUI" with lore "&cDisabled||&f||&fClick to Enable" to run [prefsSystem({_p}, 17)]->[profile_system("menu", "social", {_p}, {_p2})]
+			if {mineplex.pref.sci.%{_p}%} is true:
+				format slot 16 of {_p} with book named "&aShow Community Invites" with lore "&aEnabled||&f||&fClick to Disable||&f" to run [prefsSystem({_p}, 18)]->[profile_system("menu", "social", {_p}, {_p2})]
+				format slot 25 of {_p} with light green dye named "&aShow Community Invites" with lore "&aEnabled||&f||&fClick to Disable" to run [prefsSystem({_p}, 18)]->[profile_system("menu", "social", {_p}, {_p2})]
+			else:
+				format slot 16 of {_p} with book named "&cShow Community Invites" with lore "&cDisabled||&f||&fClick to Enable||&f" to run [prefsSystem({_p}, 18)]->[profile_system("menu", "social", {_p}, {_p2})]
+				format slot 25 of {_p} with gray dye named "&cShow Community Invites" with lore "&cDisabled||&f||&fClick to Enable" to run [prefsSystem({_p}, 18)]->[profile_system("menu", "social", {_p}, {_p2})]
+			if {mineplex.pref.dpg.%{_p}%} is true:
+				format slot 31 of {_p} with chest named "&aDisplay Parties GUI" with lore "&aEnabled||&f||&fClick to Disable||&f" to run [prefsSystem({_p}, 19)]->[profile_system("menu", "social", {_p}, {_p2})]
+				format slot 40 of {_p} with light green dye named "&aDisplay Parties GUI" with lore "&aEnabled||&f||&fClick to Disable" to run [prefsSystem({_p}, 19)]->[profile_system("menu", "social", {_p}, {_p2})]
+			else:
+				format slot 31 of {_p} with chest named "&cDisplay Parties GUI" with lore "&cDisabled||&f||&fClick to Enable||&f" to run [prefsSystem({_p}, 19)]->[profile_system("menu", "social", {_p}, {_p2})]
+				format slot 40 of {_p} with gray dye named "&cDisplay Parties GUI" with lore "&cDisabled||&f||&fClick to Enable" to run [prefsSystem({_p}, 19)]->[profile_system("menu", "social", {_p}, {_p2})]
+		if {_arg2} is "staff":
+			wait 2 tick
+			open chest with 6 rows named "Exclusive Preferences" to {_p}
+			wait 4 tick
+			format slot 0 of {_p} with bed named "← Go Back" to run [profile_system("menu", "prefs", {_p}, {_p2})]
+			format slot 1 of {_p} with light blue stained glass pane named "&f" to be unstealable
+			format slot 2 of {_p} with light blue stained glass pane named "&f" to be unstealable
+			format slot 3 of {_p} with light blue stained glass pane named "&f" to be unstealable
+			format slot 4 of {_p} with light blue stained glass pane named "&f" to be unstealable
+			format slot 5 of {_p} with light blue stained glass pane named "&f" to be unstealable
+			format slot 6 of {_p} with light blue stained glass pane named "&f" to be unstealable
+			format slot 7 of {_p} with light blue stained glass pane named "&f" to be unstealable
+			format slot 8 of {_p} with light blue stained glass pane named "&f" to be unstealable
+			format slot 9 of {_p} with light blue stained glass pane named "&f" to be unstealable
+			format slot 17 of {_p} with light blue stained glass pane named "&f" to be unstealable
+			format slot 18 of {_p} with light blue stained glass pane named "&f" to be unstealable
+			format slot 26 of {_p} with light blue stained glass pane named "&f" to be unstealable
+			format slot 27 of {_p} with light blue stained glass pane named "&f" to be unstealable
+			format slot 35 of {_p} with light blue stained glass pane named "&f" to be unstealable
+			format slot 36 of {_p} with light blue stained glass pane named "&f" to be unstealable
+			format slot 44 of {_p} with light blue stained glass pane named "&f" to be unstealable
+			format slot 45 of {_p} with light blue stained glass pane named "&f" to be unstealable
+			format slot 46 of {_p} with light blue stained glass pane named "&f" to be unstealable
+			format slot 47 of {_p} with light blue stained glass pane named "&f" to be unstealable
+			format slot 48 of {_p} with light blue stained glass pane named "&f" to be unstealable
+			format slot 49 of {_p} with light blue stained glass pane named "&f" to be unstealable
+			format slot 50 of {_p} with light blue stained glass pane named "&f" to be unstealable
+			format slot 51 of {_p} with light blue stained glass pane named "&f" to be unstealable
+			format slot 52 of {_p} with light blue stained glass pane named "&f" to be unstealable
+			format slot 53 of {_p} with light blue stained glass pane named "&f" to be unstealable
+			if {mineplex.pref.hif.%{_p}%} is true:
+				format slot 10 of {_p} with nether star named "&aHub Invisibility & Flight" with lore "&aEnabled||&f||&fClick to Disable||&f" to run [prefsSystem({_p}, 20)]->[profile_system("menu", "staff", {_p}, {_p2})]
+				format slot 19 of {_p} with light green dye named "&aHub Invisibility & Flight" with lore "&aEnabled||&f||&fClick to Disable" to run [prefsSystem({_p}, 20)]->[profile_system("menu", "staff", {_p}, {_p2})]
+			else:
+				format slot 10 of {_p} with nether star named "&cHub Invisibility & Flight" with lore "&cDisabled||&f||&fClick to Enable||&f" to run [prefsSystem({_p}, 20)]->[profile_system("menu", "staff", {_p}, {_p2})]
+				format slot 19 of {_p} with gray dye named "&cHub Invisibility & Flight" with lore "&cDisabled||&f||&fClick to Enable" to run [prefsSystem({_p}, 20)]->[profile_system("menu", "staff", {_p}, {_p2})]
+			if {mineplex.ff.%{_p}%} is true:
+				format slot 12 of {_p} with slimeball named "&aHub Forcefield" with lore "&aEnabled||&f||&fClick to Disable||&f" to run [prefsSystem({_p}, 8)]->[profile_system("menu", "staff", {_p}, {_p2})]
+				format slot 21 of {_p} with light green dye named "&aHub Forcefield" with lore "&aEnabled||&f||&fClick to Disable" to run [prefsSystem({_p}, 8)]->[profile_system("menu", "staff", {_p}, {_p2})]
+			else:
+				format slot 12 of {_p} with slimeball named "&cHub Forcefield" with lore "&cDisabled||&f||&fClick to Disable||&f" to run [prefsSystem({_p}, 8)]->[profile_system("menu", "staff", {_p}, {_p2})]
+				format slot 21 of {_p} with gray dye named "&cHub Forcefield" with lore "&cDisabled||&f||&fClick to Disable" to run [prefsSystem({_p}, 8)]->[profile_system("menu", "staff", {_p}, {_p2})]
+			if {mineplex.pref.gwen.%{_p}%} is true:
+				format slot 14 of {_p} with paper named "&aGlobal GWEN Reports" with lore "&aEnabled||&f||&fClick to Disable||&f" to run [prefsSystem({_p}, 5)]->[profile_system("menu", "staff", {_p}, {_p2})]
+				format slot 23 of {_p} with light green dye named "&aGlobal GWEN Reports" with lore "&aEnabled||&f||&fClick to Disable" to run [prefsSystem({_p}, 5)]->[profile_system("menu", "staff", {_p}, {_p2})]
+			else:
+				format slot 14 of {_p} with paper named "&cGlobal GWEN Reports" with lore "&cDisabled||&f||&fClick to Enable||&f" to run [prefsSystem({_p}, 5)]->[profile_system("menu", "staff", {_p}, {_p2})]
+				format slot 23 of {_p} with gray dye named "&cGlobal GWEN Reports" with lore "&cDisabled||&f||&fClick to Enable" to run [prefsSystem({_p}, 5)]->[profile_system("menu", "staff", {_p}, {_p2})]
+			if {mineplex.pref.report.%{_p}%} is true:
+				format slot 16 of {_p} with book named "&aUser Reports" with lore "&aEnabled||&f||&fClick to Disable||&f" to run [prefsSystem({_p}, 6)]->[profile_system("menu", "staff", {_p}, {_p2})]
+				format slot 25 of {_p} with light green dye named "&aUser Reports" with lore "&aEnabled||&f||&fClick to Disable" to run [prefsSystem({_p}, 6)]->[profile_system("menu", "staff", {_p}, {_p2})]
+			else:
+				format slot 16 of {_p} with book named "&cUser Reports" with lore "&cDisabled||&f||&fClick to Enable||&f" to run [prefsSystem({_p}, 6)]->[profile_system("menu", "staff", {_p}, {_p2})]
+				format slot 25 of {_p} with gray dye named "&cUser Reports" with lore "&cDisabled||&f||&fClick to Enable" to run [prefsSystem({_p}, 6)]->[profile_system("menu", "staff", {_p}, {_p2})]
+			if {mineplex.pref.ff.%{_p}%} is true:
+				format slot 31 of {_p} with saddle named "&aIgnore Hub Velocity" with lore "&aEnabled||&f||&fClick to Disable||&f" to run [prefsSystem({_p}, 7)]->[profile_system("menu", "staff", {_p}, {_p2})]
+				format slot 40 of {_p} with light green dye named "&aIgnore Hub Velocity" with lore "&aEnabled||&f||&fClick to Disable" to run [prefsSystem({_p}, 7)]->[profile_system("menu", "staff", {_p}, {_p2})]
+			else:
+				format slot 31 of {_p} with saddle named "&cIgnore Hub Velocity" with lore "&cDisabled||&f||&fClick to Enable||&f" to run [prefsSystem({_p}, 7)]->[profile_system("menu", "staff", {_p}, {_p2})]
+				format slot 40 of {_p} with gray dye named "&cIgnore Hub Velocity" with lore "&cDisabled||&f||&fClick to Enable" to run [prefsSystem({_p}, 7)]->[profile_system("menu", "staff", {_p}, {_p2})]
+		if {_arg2} is "stats":
+			wait 2 tick
+			open chest with 5 rows named "%{_p}%'s Stats" to {_p2}
+			wait 4 tick
+			set {_tm} to {mineplex.time.%{_p}%}
+			if {_tm} is less than 60:
+				set {_global.time} to "%{_final}%.0 Seconds"
+			else if {_tm} is less than 3600:
+				set {_final} to {_tm} / 60
+				set {_global.time} to "%{_final}% Minutes"
+			else if {_tm} is less than 86400:
+				set {_final} to {_tm} / 3600
+				set {_global.time} to "%{_final}% Hours"
+			else if {_tm} is less than 604800:
+				set {_final} to {_tm} / 86400
+				set {_global.time} to "%{_final}% Days"
+			else:
+				set {_final} to {_tm} / 604800
+				set {_global.time} to "%{_final}% Weeks"
+			set {_global.gems} to getPlayerdata({_p}, "stats.global.gems")
+			set {_global.games} to getPlayerdata({_p}, "stats.global.games")
+			set {_global.dailyr} to getPlayerdata({_p}, "stats.global.dailyr")
+			set {_global.voted} to getPlayerdata({_p}, "stats.global.voted")
+			set {_global.chests} to getPlayerdata({_p}, "stats.global.chests")
+			format slot 2 of {_p} with emerald named "&a&lGlobal" with lore "||&eGems Earned: &f%{_global.gems}%|| ||&eGames Played: &f%{_global.games}%||&eTime In Game: &f%{_global.time}%|| ||&eDaily Rewards: &f%{_global.dailyr}%||&eTimes Voted: &f%{_global.voted}%|| ||&eChests Opened: &f%{_global.chests}%" to be unstealable
+
+			
+
+command /stats [<offline player>] [<string>]:
+	trigger:
+		if arg 1 is not set:
+			set {_p} to player
+			set {_good} to true
+		else:
+			if arg 1 is online:
+				set {_p} to arg 1
+				set {_good} to true
+			else:
+				send "&9Online Player Search> &e0 &7matches for [&e%arg-1%&7]."
+				stop
+		if {_good} is true:
+			profile_system("menu", "stats", {_p}, player)
+on right click:
+	if name of player's tool is "&aMy Profile":
+		profile_system("menu", "profile", player, player)
+command /profilemeup:
+	trigger:
+		give player chest named "&aMy Profile"
 command /prefs:
 	trigger:
-		set {_s} to "Steve" parsed as offline player
-		open chest with 6 rows named "         &nUser Preferences" to player
-		wait 1 tick
-		format slot 9 of player with fire charge named "&cHub Stacker" with lore "&c&mNull" to be unstealable
-		format slot 18 of player with gray dye named "&cHub Stacker" with lore "&c&mNull" to be unstealable
- 
-		if {mineplex.pref.hpv.%player%} is true:
-			format slot 11 of player with eye of ender named "&aHub Player Visibility" with lore "&a%{mineplex.pref.hpv.%player%}%|| ||&fClick to Toggle" to close then run [prefsSystem(player, 1)]
-		else:
-			format slot 11 of player with eye of ender named "&cHub Player Visibility" with lore "&c%{mineplex.pref.hpv.%player%}%|| ||&fClick to Toggle" to close then run [prefsSystem(player, 1)]
-		if {mineplex.pref.hpv.%player%} is true:
-			format slot 20 of player with light green dye named "&aHub Player Visibility" with lore "&a%{mineplex.pref.hpv.%player%}%|| ||&fClick to Toggle" to close then run [prefsSystem(player, 1)]
-		else:
-			format slot 20 of player with gray dye named "&cHub Player Visibility" with lore "&c%{mineplex.pref.hpv.%player%}%|| ||&fClick to Toggle" to close then run [prefsSystem(player, 1)]
- 
- 
-		if {mineplex.pref.pc.%player%} is true:
-			format slot 13 of player with paper named "&aPlayer Chat" with lore "&a%{mineplex.pref.pc.%player%}%|| ||&fClick to Toggle" to close then run [prefsSystem(player, 2)]
-		else:
-			format slot 13 of player with paper named "&cPlayer Chat" with lore "&c%{mineplex.pref.pc.%player%}%|| ||&fClick to Toggle" to close then run [prefsSystem(player, 2)]
-		if {mineplex.pref.pc.%player%} is true:
-			format slot 22 of player with light green dye named "&aPlayer Chat" with lore "&a%{mineplex.pref.pc.%player%}%|| ||&fClick to Toggle" to close then run [prefsSystem(player, 2)]
-		else:
-			format slot 22 of player with gray dye named "&cPlayer Chat" with lore "&c%{mineplex.pref.pc.%player%}%|| ||&fClick to Toggle" to close then run [prefsSystem(player, 2)]
- 
-		if {mineplex.pref.pm.%player%} is true:
-			format slot 15 of player with empty map named "&aPrivate Messaging" with lore "&a%{mineplex.pref.pm.%player%}%|| ||&fClick to Toggle" to close then run [prefsSystem(player, 3)]
-		else:
-			format slot 15 of player with empty map named "&cPrivate Messaging" with lore "&c%{mineplex.pref.pm.%player%}%|| ||&fClick to Toggle" to close then run [prefsSystem(player, 3)]
-		if {mineplex.pref.pm.%player%} is true:
-			format slot 24 of player with light green dye named "&aPrivate Messaging" with lore "&a%{mineplex.pref.pm.%player%}%|| ||&fClick to Toggle" to close then run [prefsSystem(player, 3)]
-		else:
-			format slot 24 of player with gray dye named "&cPrivate Messaging" with lore "&c%{mineplex.pref.pm.%player%}%|| ||&fClick to Toggle" to close then run [prefsSystem(player, 3)]
- 
- 
-		format slot 17 of player with player's skull named "&cHub Party Requests" with lore "&c&mNull" to be unstealable
-		format slot 26 of player with gray dye named "&cHub Party Requests" with lore "&c&mNull" to be unstealable
- 
- 
-		format slot 40 of player with red flower named "&cShow Pending Friend Requests" with lore "&c&mNull" to be unstealable
-		format slot 49 of player with gray dye named "&cShow Pending Friend Requests" with lore "&c&mNull" to be unstealable
- 
- 
-		if player has permission "mineplex.trainee":
-			if {mineplex.pref.gwen.%player%} is true:
-				format slot 42 of player with paper named "&aGWEN Reports" with lore "&a%{mineplex.pref.gwen.%player%}%|| ||&fClick to Toggle" to close then run [prefsSystem(player, 4)]
-			else:
-				format slot 42 of player with paper named "&cGWEN Reports" with lore "&c%{mineplex.pref.gwen.%player%}%|| ||&fClick to Toggle" to close then run [prefsSystem(player, 4)]
-			if {mineplex.pref.gwen.%player%} is true:
-				format slot 51 of player with light green dye named "&aGWEN Reports" with lore "&a%{mineplex.pref.gwen.%player%}%|| ||&fClick to Toggle" to close then run [prefsSystem(player, 4)]
-			else:
-				format slot 51 of player with gray dye named "&cGWEN Reports" with lore "&c%{mineplex.pref.gwen.%player%}%|| ||&fClick to Toggle" to close then run [prefsSystem(player, 4)]
- 
-			if {mineplex.pref.ff.%player%} is true:
-				format slot 44 of player with saddle named "&aHub Ignore Velocity" with lore "&a%{mineplex.pref.ff.%player%}%|| ||&fClick to Toggle" to close then run [prefsSystem(player, 6)]
-			else:
-				format slot 44 of player with saddle named "&cHub Ignore Velocity" with lore "&c%{mineplex.pref.ff.%player%}%|| ||&fClick to Toggle" to close then run [prefsSystem(player, 6)]
-			if {mineplex.pref.ff.%player%} is true:
-				format slot 53 of player with light green dye named "&aHub Ignore Velocity" with lore "&a%{mineplex.pref.ff.%player%}%|| ||&fClick to Toggle" to close then run [prefsSystem(player, 6)]
-			else:
-				format slot 53 of player with gray dye named "&cHub Ignore Velocity" with lore "&c%{mineplex.pref.ff.%player%}%|| ||&fClick to Toggle" to close then run [prefsSystem(player, 6)]
- 
-			if {mineplex.pref.report.%player%} is true:
-				format slot 36 of player with book named "&aUser Reports" with lore "&a%{mineplex.pref.report.%player%}%|| ||&fClick to Toggle" to close then run [prefsSystem(player, 5)]
-			else:
-				format slot 36 of player with book named "&cUser Reports" with lore "&c%{mineplex.pref.report.%player%}%|| ||&fClick to Toggle" to close then run [prefsSystem(player, 5)]
-			if {mineplex.pref.report.%player%} is true:
-				format slot 45 of player with light green dye named "&aUser Reports" with lore "&a%{mineplex.pref.report.%player%}%|| ||&fClick to Toggle" to close then run [prefsSystem(player, 5)]
-			else:
-				format slot 45 of player with gray dye named "&cUser Reports" with lore "&c%{mineplex.pref.report.%player%}%|| ||&fClick to Toggle" to close then run [prefsSystem(player, 5)]
- 
-			if {mineplex.ff.%player%} is true:
-				format slot 38 of player with slimeball named "&aHub Forcefield" with lore "&a%{mineplex.ff.%player%}%|| ||&fClick to Toggle" to close then run [prefsSystem(player, 7)]
-			else:
-				format slot 38 of player with slimeball named "&cHub Forcefield" with lore "&c%{mineplex.ff.%player%}%|| ||&fClick to Toggle" to close then run [prefsSystem(player, 7)]
-			if {mineplex.ff.%player%} is true:
-				format slot 47 of player with light green dye named "&aHub Forcefield" with lore "&a%{mineplex.ff.%player%}%|| ||&fClick to Toggle" to close then run [prefsSystem(player, 7)]
-			else:
-				format slot 47 of player with gray dye named "&cHub Forcefield" with lore "&c%{mineplex.ff.%player%}%|| ||&fClick to Toggle" to close then run [prefsSystem(player, 7)]
- 
- 
-		if player has permission "mineplex.youtube":
-			if {mineplex.pref.ff.%player%} is true:
-				format slot 44 of player with saddle named "&aHub Ignore Velocity" with lore "&a%{mineplex.pref.ff.%player%}%|| ||&fClick to Toggle" to close then run [prefsSystem(player, 6)]
-			else:
-				format slot 44 of player with saddle named "&cHub Ignore Velocity" with lore "&c%{mineplex.pref.ff.%player%}%|| ||&fClick to Toggle" to close then run [prefsSystem(player, 6)]
-			if {mineplex.pref.ff.%player%} is true:
-				format slot 53 of player with light green dye named "&aHub Ignore Velocity" with lore "&a%{mineplex.pref.ff.%player%}%|| ||&fClick to Toggle" to close then run [prefsSystem(player, 6)]
-			else:
-				format slot 53 of player with gray dye named "&cHub Ignore Velocity" with lore "&c%{mineplex.pref.ff.%player%}%|| ||&fClick to Toggle" to close then run [prefsSystem(player, 6)]
- 
- 
-			if {mineplex.ff.%player%} is true:
-				format slot 38 of player with slimeball named "&aHub Forcefield" with lore "&a%{mineplex.ff.%player%}%|| ||&fClick to Toggle" to close then run [prefsSystem(player, 7)]
-			else:
-				format slot 38 of player with slimeball named "&cHub Forcefield" with lore "&c%{mineplex.ff.%player%}%|| ||&fClick to Toggle" to close then run [prefsSystem(player, 7)]
-			if {mineplex.ff.%player%} is true:
-				format slot 47 of player with light green dye named "&aHub Forcefield" with lore "&a%{mineplex.ff.%player%}%|| ||&fClick to Toggle" to close then run [prefsSystem(player, 7)]
-			else:
-				format slot 47 of player with gray dye named "&cHub Forcefield" with lore "&c%{mineplex.ff.%player%}%|| ||&fClick to Toggle" to close then run [prefsSystem(player, 7)]
- 
- 
-		if player has permission "mineplex.twitch":
-			if {mineplex.pref.ff.%player%} is true:
-				format slot 44 of player with saddle named "&aHub Ignore Velocity" with lore "&a%{mineplex.pref.ff.%player%}%|| ||&fClick to Toggle" to close then run [prefsSystem(player, 6)]
-			else:
-				format slot 44 of player with saddle named "&cHub Ignore Velocity" with lore "&c%{mineplex.pref.ff.%player%}%|| ||&fClick to Toggle" to close then run [prefsSystem(player, 6)]
-			if {mineplex.pref.ff.%player%} is true:
-				format slot 53 of player with light green dye named "&aHub Ignore Velocity" with lore "&a%{mineplex.pref.ff.%player%}%|| ||&fClick to Toggle" to close then run [prefsSystem(player, 6)]
-			else:
-				format slot 53 of player with gray dye named "&cHub Ignore Velocity" with lore "&c%{mineplex.pref.ff.%player%}%|| ||&fClick to Toggle" to close then run [prefsSystem(player, 6)]
- 
- 
-			if {mineplex.ff.%player%} is true:
-				format slot 38 of player with slimeball named "&aHub Forcefield" with lore "&a%{mineplex.ff.%player%}%|| ||&fClick to Toggle" to close then run [prefsSystem(player, 7)]
-			else:
-				format slot 38 of player with slimeball named "&cHub Forcefield" with lore "&c%{mineplex.ff.%player%}%|| ||&fClick to Toggle" to close then run [prefsSystem(player, 7)]
-			if {mineplex.ff.%player%} is true:
-				format slot 47 of player with light green dye named "&aHub Forcefield" with lore "&a%{mineplex.ff.%player%}%|| ||&fClick to Toggle" to close then run [prefsSystem(player, 7)]
-			else:
-				format slot 47 of player with gray dye named "&cHub Forcefield" with lore "&c%{mineplex.ff.%player%}%|| ||&fClick to Toggle" to close then run [prefsSystem(player, 7)]
+		profile_system("menu", "prefs", player, player)
 
 #GWEN CODING! (Using my old plugin Shield) (I took it down as I was ripping off json.sk but wtevr) lol
 
