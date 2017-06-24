@@ -6122,7 +6122,8 @@ function profile_system(arg1: text , arg2: text , p: player, p2: player) :: numb
 			open chest with 3 rows named "My Profile" to {_p}
 			wait 4 ticks
 			format slot 11 of {_p} with {_p}'s skull named "&eStats and Achievements" with lore "&f||&fView your Statistics and Achievements||&ffor all of the games on Mineplex!||&f||&fType &a/stats &fto access this anywhere!" to run [profile_system("menu", "stats", {_p}, {_p2})]
-			format slot 13 of {_p} with redstone comparator item named "&ePreferences" with lore "&f||&fSet your preferences to your liking||&fso you can enjoy the game more!||&f||&fType &a/prefs &fto access this anywhere!" to run [profile_system("menu", "prefs", {_p}, {_p2})]
+			format slot 13 of {_p} with redstone comparator item named "&ePreferences" with lore "&f||&fSet your preferences to your liking||&fso you can enjoy the game more!||&f||&fType &a
+			&fto access this anywhere!" to run [profile_system("menu", "prefs", {_p}, {_p2})]
 			format slot 15 of {_p} with glistering melon named "&eMineplex Player Server" with lore "&f||&fCreate a server where you are the Host.||&fYou can Choose the game, map and much more!||&f||&fType &a/mps &fto access this anywhere!" to be unstealable
 		if {_arg2} is "prefs":
 			if {_p} has permission "mineplex.trainee":
@@ -6509,7 +6510,10 @@ on right click:
 		profile_system("menu", "profile", player, player)
 command /profilemeup:
 	trigger:
-		give player chest named "&aMy Profile"				
+		give player chest named "&aMy Profile"
+command /prefs:
+	trigger:
+		profile_system("menu", "prefs", player, player)
 
 #GWEN CODING! (Using my old plugin Shield) (I took it down as I was ripping off json.sk but wtevr) lol
 
