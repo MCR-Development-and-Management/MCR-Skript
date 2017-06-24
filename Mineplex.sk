@@ -4303,14 +4303,17 @@ command /ma [<player>] [<text>]:
 			set {_display2} to "%{mineplex.displaya.%arg-1%}% %arg-1%"
 		if player has permission "mineplex.trainee":
 			if argument 1 and argument 2 is set:
-				if arg-1 does not have permission "mineplex.trainee":
-					send "&d<- %{_display}% &d%arg-2%" to arg-1
-					play "NOTE_PLING" to arg-1 at volume 0.5
+				send "&d-> %{_display2}% &d%arg 2%"
+				send "&d<- %{_display}% &d%arg 2%" to arg-1
 				set {mineplex.lasta.%player%} to arg-1
+				play "NOTE_PLING" to player at volume 0.5
+				play "NOTE_PLING" to arg-1 at volume 0.5
 				loop all players:
 					if loop-player has permission "mineplex.trainee":
-						send "%{_display}% &d-> %{_display2}% &d%arg-2%" to loop-player
-						play "NOTE_PLING" to loop-player at volume 0.5
+						if loop-player is player or arg-1:
+							stop
+						else:
+							send "%{_display2}% &d-> %{_display}% &d%arg 2%" to loop-player
 			else:
 				send "&9Message> &cErr...something went wrong?"
 		else:
@@ -4337,13 +4340,16 @@ command /ra [<text>]:
 			stop
 		else:
 			if argument 1 is set:
-				if {mineplex.lasta.%player%} does not have permission "mineplex.trainee":
-					send "&d<- %{_display}% &d%arg-1%" to {mineplex.lasta.%player%}
-					play "NOTE_PLING" to player at volume 0.5
+				send "&d-> %{_display2}% &d%arg 1%"
+				send "&d<- %{_display}% &d%arg-1%" to {mineplex.lasta.%player%}
+				play "NOTE_PLING" to player at volume 0.5
+				play "NOTE_PLING" to {mineplex.lasta.%player%} at volume 0.5
 				loop all players:
 					if loop-player has permission "mineplex.trainee":
-						send "%{_display}% &d-> %{_display2}% &d%arg-1%" to loop-player
-						play "NOTE_PLING" to loop-player at volume 0.5
+						if loop-player is player or {mineplex.lasta.%player%}:
+							stop
+						else:
+							send "%{_display2}% &d-> %{_display}% &d%arg 1%" to loop-player
 			else:
 				send "&9Message> &cErr...something went wrong?"
 
