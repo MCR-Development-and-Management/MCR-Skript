@@ -1111,14 +1111,6 @@ function carlSpin(p: player) :: number:
 	else:
 		send "&9Carl's Spinner> &7You don't have a Carl Spinner Ticket!" to {_p}
 
-function ytad(p: player) :: number:
-	message "&6&m=====================================" to {_p}
-	message "&b &f" to {_p}
-	message "          &f&lClick to Open in Web Browser and claim your Reward!" to {_p}
-	message "          &a&nhttps://www.youtube.com/channel/UCjQh27pdwqpWf4KqAFEacoA" to {_p}
-	message "&b &f" to {_p}
-	message "&6&m=====================================" to {_p}
-
 function ytlink(p: player) :: number:
 	set {_t} to difference between {carl.ytr.%{_p}%} and now
 	set {_tc} to "1 day" parsed as a timespan
@@ -1220,14 +1212,13 @@ function carlGUI(p: player) :: number:
 		format slot 30 of {_p} with redstone block named "&c&lThank Rewards" with lore "||&7Earn Thank Rewards from players using /thank||&7on you, or by enabling Game Amplifiers.||&b||&fGet Amplifiers at &a%{mineplex.config.shoplink}%" to close
 	format slot 20 of {_p} with water bucket named "&e&lVisit us on Facebook" with lore "||&fWe don't have a facebook!" to close
 	format slot 16 of {_p} with redstone block named "&c&lPower Play Club" with lore "&eFebruary's Cosmetic||  &fTrue Love Pet||&b &f||&eOther Rewards||  &f2 Game Amplifier||  &f1 Omega Chest||&b||&cGet Power Play Club months at||&b%{mineplex.config.shoplink}%" to close
-	format slot 24 of {_p} with apple named "&a&lVisit our featured creator &6&lMCR" with lore "&eClaim a Daily Reward||&fby checking out the latest Video||&fby &6MCR&f!||||&fBe sure and Subscribe if you||&fenjoy their videos!||||&aClick to visit &6MCR &aon YouTube!" to close then run [ytad({_p})]
 	format slot 14 of {_p} with creeper head named "&c&lCarl's Spinner" with lore "||&fYou need a Carl Spin Ticket to Spin||&b||&eYour Tickets: &f%{spintickets.%{_p}%}%" to close then run [carlSpin({_p})]
 	set {_t} to difference between {carl.ytr.%{_p}%} and now
 	set {_tc} to "1 day" parsed as a timespan
 	if {_t} is less than {_tc}:
-		format slot 22 of {_p} with apple named "&a&lVisit us on YouTube" with lore "&eClaim your Daily 250 Shard Reward||&fby checking out the latest Video ||&fon the %{mineplex.config.servername}% Channel!||&b||&fBe sure and Subscribe so you ||&fdon't miss a video!||&b||&aClick to visit us on YouTube!" to close then run [ytlink({_p})]
+		format slot 24 of {_p} with apple named "&a&lVisit us on YouTube" with lore "&fCome back Tomorrow for your||&fDaily Reward!||||&fCheck out the lastest Video||&fon the %{mineplex.config.servername}% Channel!||&b||&fBe sure and Subscribe so you ||&fdon't miss a video!||&b||&aClick to visit us on YouTube!" to close then run [ytlink({_p})]
 	else:	
-		format slot 22 of {_p} with apple named "&a&lVisit us on YouTube" with lore "&&fCome back Tomorrow for your||&fDaily Reward!||||&fCheck out the lastest Video||&fon the %{mineplex.config.servername}% Channel!||&b||&fBe sure and Subscribe so you ||&fdon't miss a video!||&b||&aClick to visit us on YouTube!" to close then run [ytlink({_p})]
+		format slot 24 of {_p} with apple named "&a&lVisit us on YouTube" with lore "&eClaim your Daily 250 Shard Reward||&fby checking out the latest Video ||&fon the %{mineplex.config.servername}% Channel!||&b||&fBe sure and Subscribe so you ||&fdon't miss a video!||&b||&aClick to visit us on YouTube!" to close then run [ytlink({_p})]
 	format slot 32 of {_p} with tripwire hook named "&a&lWatch an Ad!" with lore "&eEarn 1 Carl Spin Ticket||&fby checking out our partner's Advertisement||||&fYou can watch 5 Ads every 24 hours.||||&fPlease help us keep %{mineplex.config.servername}% awesome||&c&lMake sure to have your AdBlocker disabled!||||&aClick to watch the Ad now!" to be unstealable
 	format slot 34 of {_p} with egg named "&a&lVisit us on Twitter" with lore "&fCheck out and follow Mineplex on||&fTwitter for Giveaways, Announcements,||&fTeasers, and Tips!||&b||&aClick to visit us on Twitter" to close then run [tlink({_p})]
 
