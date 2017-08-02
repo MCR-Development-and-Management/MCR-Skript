@@ -256,8 +256,6 @@ on load: #You cannot trust people to enter the correct thing so lets double chec
 		set {mineplex.mode} to "file"
 		send "§9MCR> §eMCR has been set to store playerdata into files!" to the console
 
-on load:
-	set {pass} to "6YciP1c4f7"
 
 on load:
 	if {mineplex.mode} is "sql":
