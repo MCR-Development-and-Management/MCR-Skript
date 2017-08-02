@@ -759,9 +759,8 @@ function mcs(p: player , m: text) :: number:
 							set {_ignore.%loop-player-1%} to true
 					if {_ignore.%loop-player-1%} is not set:
 						if {mineplex.rank.%{_player}%} is not "":
-							replace all "&" with "" in {_m}
 							set {_sanitizedm} to uncolored {_m}
-							mcrjson("%loop-player%", "%{_lvl}%|| %{mineplex.rank.%{_player}%}%||ttp:%{mineplex.hover.%{_player}%}%||&e%{_player}% &f%{_sanitizedm}%")
+							mcrjson("%loop-player%", "%{_lvl}%|| %{mineplex.rank.%{_player}%}%||ttp:%{mineplex.hover.%{_player}%}%||&e%{_player}% &f%{_sanitizedm}%", false)
 						else:
 							send "%{_lvl}% %{mineplex.rank.%{_player}%}%&e%{_player}% &f%{_m}%" to loop-player
 		return -1
