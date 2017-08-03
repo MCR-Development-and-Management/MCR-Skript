@@ -1807,25 +1807,25 @@ function cosmetic_system(arg1: text , arg2: text , p: player) :: number:
 		#Morphs
 		if {_arg2} is "morph_creeper":
 			if {mineplex.%{_p}%.cosmetics.morphs.owned.creeper} is 1:
-				message "&9Gadget> &7You allready own this morph!" to {_p}
+				message "&9Gadget> &7You already own this morph!" to {_p}
 			else:
 				format slot 22 of {_p} with gunpowder named "&fCreeper Morph" with lore "&fHissssss!" to be unstealable
 				format slot 4 of {_p} with prismarine shard named "&fTreasure Shards" with lore "&f10000 Treasure Shards will be||&fdeducated from your account balance" to be unstealable
 		if {_arg2} is "morph_cow":
 			if {mineplex.%{_p}%.cosmetics.morphs.owned.creeper} is 1:
-				message "&9Gadget> &7You allready own this morph!" to {_p}
+				message "&9Gadget> &7You already own this morph!" to {_p}
 			else:
 				format slot 4 of {_p} with prismarine shard named "&fTreasure Shards" with lore "&f60000 Treasure Shards will be||&fdeducated from your account balance" to be unstealable
 				format slot 22 of {_p} with steak named "&fCow Morph" with lore "&fMooooo!" to be unstealable
 		if {_arg2} is "morph_slime":
 			if {mineplex.%{_p}%.cosmetics.morphs.owned.slime} is 1:
-				message "&9Gadget> &7You allready own this morph!" to {_p}
+				message "&9Gadget> &7You already own this morph!" to {_p}
 			else:
 				format slot 4 of {_p} with prismarine shard named "&fTreasure Shards" with lore "&f20000 Treasure Shards will be||&fdeducated from your account balance" to be unstealable
 				format slot 22 of {_p} with slimeball named "&fSlime Morph" with lore "&fSplat Splat!" to be unstealable
 		if {_arg2} is "morph_villager":
 			if {mineplex.%{_p}%.cosmetics.morphs.owned.villager} is 1:
-				message "&9Gadget> &7You allready own this morph!" to {_p}
+				message "&9Gadget> &7You already own this morph!" to {_p}
 			else:	
 				format slot 4 of {_p} with prismarine shard named "&fTreasure Shards" with lore "&f12000 Treasure Shards will be||&fdeducated from your account balance" to be unstealable
 				format slot 22 of {_p} with emerald named "&fVillager Morph" with lore "&fMURRR! HURR MURRR!" to be unstealable
@@ -2221,13 +2221,16 @@ on any move:
 		loop all players:
 			show 1 "flame" particles at location of player for loop-player offset by 0.4, 0.7, 0.4
 
-command /giveitem <player> <number> <text>:
+command /giveitem [<player>] [<number>] [<text>]:
 	permission: mineplex.admin
 	permission message: &9Permissions> &7This requires permission rank [&9ADMIN&7].
 	trigger:
+		if arg 3 is not set:
+			send "&9Cosmetic> &7Usage: &e/giveitem <playername> <amount> <item name>"
+			stop
 		if arg 3 is "hat_compCube":
 			if {mineplex.hat.%arg 1%.owned.compCube} is 1:
-				message "&9Cosmetics> &e%arg 1% &7allready owns &eCompanion Cube"
+				message "&9Cosmetics> &e%arg 1% &7already owns &eCompanion Cube"
 				stop
 			set {mineplex.hat.%arg 1%.owned.compCube} to 1
 			add 1 to {mineplex.%arg 1%.cosmetics.hats}
@@ -2236,7 +2239,7 @@ command /giveitem <player> <number> <text>:
 			stop
 		if arg 3 is "hat_present":
 			if {mineplex.hat.%arg 1%.owned.present} is 1:
-				message "&9Cosmetics> &e%arg 1% &7allready owns &ePresent"
+				message "&9Cosmetics> &e%arg 1% &7already owns &ePresent"
 				stop
 			set {mineplex.hat.%arg 1%.owned.present} to 1
 			add 1 to {mineplex.%arg 1%.cosmetics.hats}
@@ -2245,7 +2248,7 @@ command /giveitem <player> <number> <text>:
 			stop
 		if arg 3 is "particle_shadow":
 			if {mineplex.particle.%arg 1%.owned.shadow} is 1:
-				message "&9Cosmetics> &e%arg 1% &7allready owns &eShadow Walk"
+				message "&9Cosmetics> &e%arg 1% &7already owns &eShadow Walk"
 				stop
 			set {mineplex.particle.%arg 1%.owned.shadow} to 1
 			add 1 to {mineplex.%arg 1%.cosmetics.particles}
@@ -2254,7 +2257,7 @@ command /giveitem <player> <number> <text>:
 			stop
 		if arg 3 is "particle_flame":
 			if {mineplex.particle.%arg 1%.owned.flame} is 1:
-				message "&9Cosmetics> &e%arg 1% &7allready owns &eShadow Walk"
+				message "&9Cosmetics> &e%arg 1% &7already owns &eShadow Walk"
 				stop
 			set {mineplex.particle.%arg 1%.owned.flame} to 1
 			add 1 to {mineplex.%arg 1%.cosmetics.particles}
