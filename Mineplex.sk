@@ -1596,6 +1596,27 @@ command /removeTitle [<player>]:
 		removeTitle(arg-1)
 
 function trackDB(p: player , t: string) :: string:
+	if {_t} is "list":
+		message "&9Titles> &7 Title List"
+		message "&7aprilfools-2017"
+		message "&7holiday-cheer"
+		message "&7treasure-hunter"
+		message "&7leveler"
+		message "&7lucky"
+		message "&7mineplex-mastery"
+		message "&7party-animal"
+		message "&7peaceful"
+		message "&7perfectionist"
+		message "&7sweet-tooth"
+		message "&7unlucky"
+		message "&7warrior"
+		message "&7gotta-go"
+		message "&7santas-helper"
+		message "&7power-play (Only works if user is powerplay club)"
+		message "&7staff-trainee (Only works if user is Trainee+)"
+		message "&7staff-moderator (Only works if user is Mod+)"
+		message "&7staff-sr_moderator (Only works if user is Sr. Moderator+)"
+		message "&7staff-leader (Only works if user is Leader+)"
 	if {_t} is "aprilfools-2017":
 		set {_r} to "&5&k?&d 2017 April Fools &5&k?"
 	if {_t} is "holiday-cheer":
