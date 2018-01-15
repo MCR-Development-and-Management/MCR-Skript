@@ -757,8 +757,10 @@ function mcs(p: player , m: text) :: number:
 			if {mineplex.pref.pc.%loop-player%} is true:
 				if {mineplex.rank.%{_player}%} is set:
 					set {_lvl} to {mineplex.level.%{_player}%}
-					if {_player} is "WheezyGold7931":
+					if {_player} is "Drawfull":
 						set {_lvl} to "&c101"
+					if {_player} is "NaiculS"
+						set {_lvl} to "&4200"
 					loop {mineplex.ignorelist.%loop-player%::*}:
 						if loop-value-2 is "%{_player}%":
 							set {_ignore.%loop-player-1%} to true
@@ -985,7 +987,7 @@ command /mineplex-core [<string>] [<string>] [<string>]:
 
 command /help [<string>]:
 	trigger:
-		send "&9MCR> &7Please see &bhttps://github.com/WheezyGold7931/Mineplex-Core/wiki/Commands-and-Permissions &7for updated commands!"
+		send "&9MCR> &7Please see &bhttps://github.com/NaiculS/MCR/wiki/Commands-and-Permissions &7for updated commands!"
 
 command /recompile [<string>]:
 	aliases: /rec
@@ -1650,7 +1652,7 @@ function trackDB(p: player , t: string) :: string:
 		else:
 			return "perm"
 	if {_t} is "mcr-patreon":
-		if {_p} is "WheezyGold7931" :
+		if {_p} is "WheezyGold7931" or "Drawfull" or "NaiculS" :
 			set {_r} to "&6&kK&c&l MCR Patreon &6&kK"
 		else:
 			return "perm"
@@ -1660,17 +1662,17 @@ function trackDB(p: player , t: string) :: string:
 		else:
 			return "perm"
 	if {_t} is "mcr-dev":
-		if {_p} is "WheezyGold7931" or "TheSkripterDK" or "Torksi" or "ItzRenderman":
+		if {_p} is "WheezyGold7931" or "TheSkripterDK" or "Torksi" or "ItzRenderman" or "Drawfull" or "NaiculS":
 			set {_r} to "&6&kK&c&l MCR Dev &6&kK"
 		else:
 			return "perm"
 	if {_t} is "mcr-headcouncil":
-		if {_p} is "WheezyGold7931" or "NaiculS" or "Drawfull" or "Keyloren" or "Torksi" or "Mike70387":
+		if {_p} is "NaiculS" or "Drawfull" or "Keyloren" or "Torksi" or "Mike70387":
 			set {_r} to "&6&kK&4&l MCR Head Council &6&kK"
 		else:
 			return "perm"
 	if {_t} is "mcr-creator":
-		if {_p} is "WheezyGold7931":
+		if {_p} is "WheezyGold7931" or "Drawfull" or "NaiculS":
 			set {_r} to "&6&kK&d&l MCR Creator &6&kK"
 		else:
 			return "perm"
