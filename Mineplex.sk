@@ -4120,7 +4120,7 @@ on join:
 			add "%player%" to {mineplex.totalaccounts.%ip address of player%::*}
 
 on load:
-	#set {_var::*} to contents from url "https://raw.githubusercontent.com/WheezyGold7931/Mineplex-Core/master/version.txt" Raw in GitHub does not update fast enough rip lel
+	#set {_var::*} to contents from url "https://raw.githubusercontent.com/NaiculS/MCR/master/version.txt" Raw in GitHub does not update fast enough rip lel
 	set {_ver} to line 1 from url "http://pastebin.com/raw/LG11nc8b" parsed as a number
 	set {_c} to "{@MCRVER}" parsed as a number
 	if {_c} is more than {_ver}:
@@ -4863,14 +4863,14 @@ command /mcr:
 		send "&9Plugin> &7Mineplex Core"
 		send "&9Plugin> &7Running MCR: &e{@MCRVER}"
 		send "&9Plugin> &7Hotfix/Release Cycle: &e{@MCRHOTFIX}"
-		send "&9Plugin> &7by &aWheezyGold7931&7, &eTheSkripterDK&7, &eTorksi&7, &7and &eItzRenderman"
+		send "&9Plugin> &7by &aNaiculS&7, &aDrawfull&7, &aWheezyGold7931&7, &eTheSkripterDK&7, &eTorksi&7, &7and &eItzRenderman"
 		send "&9Plugin> &7Special thanks to TonyMaster21, LimeGlass, Rezz, Citrin_, Boobah, SomethingPlayzMC, Ottelino, and SoftBreeze"
 		send "&9Plugin> &7Also, special ﻿thanks to our moderation team."
 		send ""
 		send "&9Patreon> &7Huge Thanks to my Patreons:"
-		send "&9Patreon> &eNone, anymore"
+		send "&9Patreon> "
 		send "&9Patreon> &7If you want to be listed there than support me on Patreon!:"
-		send "&9Patreon> &bhttps://www.patreon.com/WheezyGold7931"
+		send "&9Patreon> We don't have a Patreon page yet, if you want to support us feel free to private message us on discord"
 
 command /a [<text>]:
 	aliases: /admin
