@@ -948,6 +948,7 @@ command /mineplex-core [<string>] [<string>] [<string>]:
 					add "mineplex.trainee" to {_mineplex.setadmin.temp}'s permissions
 					add "mineplex.mod" to {_mineplex.setadmin.temp}'s permissions
 					add "mineplex.srmod" to {_mineplex.setadmin.temp}'s permissions
+					add "mineplex.cmod" to {_mineplex.setadmin.temp}'s permissions
 					add "mineplex.admin" to {_mineplex.setadmin.temp}'s permissions
 					add "mineplex.legend" to {_mineplex.setadmin.temp}'s permissions
 					add "mineplex.builder" to {_mineplex.setadmin.temp}'s permissions
@@ -4728,6 +4729,12 @@ command /give [<string>] [<string>] [<string>] [<string>] [<string>]:
 						send "&9Item Search> &e0 &7matches for [&e%arg-2%&7]."
 						send "&9Item(s) Search> &7Invalid [&e%arg-2%&7]."
 		
+command /c x
+	permission: mineplex.cmod
+	permission message: &9Permissions> &7You do not have permission to do that.
+	trigger: 
+		send "&9Announcement> &7This command is not complete yet, but we're working on it"
+		
 #/givestat player stat amount
 command /givestat [<offline player>] [<string>] [<string>] [<string>]:
 	permission: mineplex.admin
@@ -5367,6 +5374,7 @@ command /rank [<string>] [<offline player>] [<string>]:
 					add "mineplex.trainee" to arg-2's permissions
 					add "mineplex.mod" to arg-2's permissions
 					add "mineplex.srmod" to arg-2's permissions
+					add "mineplex.cmod" to arg-2's permissions
 					add "mineplex.legend" to arg-2's permissions
 					add "mineplex.2fa" to arg-2's permissions
 					add "mineplex.titan" to arg-2's permissions
@@ -5389,6 +5397,7 @@ command /rank [<string>] [<offline player>] [<string>]:
 					add "mineplex.youtube" to arg-2's permissions
 					add "mineplex.builder" to arg-2's permissions
 					add "mineplex.srmod" to arg-2's permissions
+					add "mineplex.cmod" to arg-2's permissions
 					add "mineplex.admin" to arg-2's permissions
 					add "mineplex.titan" to arg-2's permissions
 					add "mineplex.2fa" to arg-2's permissions
@@ -5397,28 +5406,6 @@ command /rank [<string>] [<offline player>] [<string>]:
 					set arg-2 tab name to "&4&lADMIN &e%arg-2%"
 					updateRankAPI(arg-2)
 					setPlayerdata(arg-2, "rank", "Admin")
-				else:
-					send "&9Client Manager> &c&lInvalid rank!"
-			else if argument 3 is "APEX":
-				set {_c} to caseSensitive("%arg-3%", "%{_allcap}%")
-				if {_c} is  true:
-					set {mineplex.rank.%arg-2%} to "&9&lAPEX "
-					execute console command "/__mp__dp__ %arg-2%"
-					add "mineplex.trainee" to arg-2's permissions
-					add "mineplex.legend" to arg-2's permissions
-					add "mineplex.mod" to arg-2's permissions
-					add "mineplex.jrdev" to arg-2's permissions
-					add "mineplex.youtube" to arg-2's permissions
-					add "mineplex.builder" to arg-2's permissions
-					add "mineplex.srmod" to arg-2's permissions
-					add "mineplex.admin" to arg-2's permissions
-					add "mineplex.titan" to arg-2's permissions
-					add "mineplex.2fa" to arg-2's permissions
-					send "&9Client Manager> &7%arg-2%'s rank has been updated to Apex Minecraft Hosting!"
-					send "&9Client Manager> &7Your rank has been updated to Apex Minecraft Hosting!" to arg 2
-					set arg-2 tab name to "&9&lAPEX &e%arg-2%"
-					updateRankAPI(arg-2)
-					setPlayerdata(arg-2, "rank", "Apex")
 				else:
 					send "&9Client Manager> &c&lInvalid rank!"
 			else if argument 3 is "LEADER":
@@ -5431,6 +5418,7 @@ command /rank [<string>] [<offline player>] [<string>]:
 					add "mineplex.jrdev" to arg-2's permissions
 					add "mineplex.builder" to arg-2's permissions
 					add "mineplex.srmod" to arg-2's permissions
+					add "mineplex.cmod" to arg-2's permissions
 					add "mineplex.admin" to arg-2's permissions
 					add "mineplex.youtube" to arg-2's permissions
 					add "mineplex.legend" to arg-2's permissions
@@ -5463,6 +5451,7 @@ command /rank [<string>] [<offline player>] [<string>]:
 					add "mineplex.owner" to arg-2's permissions
 					add "mineplex.legend" to arg-2's permissions
 					add "mineplex.titan" to arg-2's permissions
+					add "mineplex.cmod" to arg-2's permissions
 					send "&9Client Manager> &7%arg-2%'s rank has been updated to Owner!"
 					send "&9Client Manager> &7Your rank has been updated to Owner!" to arg 2
 					set arg-2 tab name to "&4&lOWNER &e%arg-2%"
