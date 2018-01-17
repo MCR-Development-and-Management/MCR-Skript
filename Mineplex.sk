@@ -1677,6 +1677,21 @@ function trackDB(p: player , t: string) :: string:
 			set {_r} to "&6&kK&d&l MCR Creator &6&kK"
 		else:
 			return "perm"
+	if {_t} is "mcr-creator2":
+		if {_p} is "WheezyGold7931" or "Drawfull" or "NaiculS":
+			set {_r} to "&6&kK&d&l MCR Creator2 &6&kK"
+		else:
+			return "perm"
+	if {_t} is "mcr-creator-NaiculS":
+		if {_p} is "NaiculS":
+			set {_r} to "&6&kK&d&l NaiculS the King &6&kK"
+		else:
+			return "perm"
+	if {_t} is "mcr-creator-Drawfull":
+		if {_p} is "Drawfull":
+			set {_r} to "&6&kK&d&l Drawfull the King &6&kK"
+		else:
+			return "perm"
 	if {_r} is not set:
 		set {_r} to "false"
 	return {_r}
