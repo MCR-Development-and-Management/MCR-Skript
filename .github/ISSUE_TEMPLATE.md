@@ -16,4 +16,4 @@
 ## Bullet Points of how to get this bug
 
 
-#### Thanks for your help, Wheezy!
+#### Thanks for your help!
