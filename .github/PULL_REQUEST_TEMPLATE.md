@@ -7,4 +7,4 @@
 ## Have you tested the code subject in this pull?
 
 
-#### Thanks for helping out, Wheezy!
+#### Thanks for helping out!
