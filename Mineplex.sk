@@ -4292,6 +4292,13 @@ every 2 ticks:
 						push the loop-player-2 backwards at speed 0.45
 						play raw sound "mob.chicken.plop" at loop-player-2 with pitch 1 volume 10
 
+command /radius [<string>]
+	permission: mineplex.owner
+	permission message: &9Permissions> &7You do not have permission to do that.
+	trigger:
+		
+	
+
 #2 Factor
 
 command /2fareset <player>:
