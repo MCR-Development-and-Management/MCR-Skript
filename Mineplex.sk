@@ -4748,7 +4748,7 @@ command /c x
 	permission: mineplex.cmod
 	permission message: &9Permissions> &7You do not have permission to do that.
 	trigger: 
-		send "&9Announcement> &7This command is not complete yet, but we're working on it"
+		send "&9Announcement> &7This command is not complete yet, but we're working on it!"
 		
 #/givestat player stat amount
 command /givestat [<offline player>] [<string>] [<string>] [<string>]:
