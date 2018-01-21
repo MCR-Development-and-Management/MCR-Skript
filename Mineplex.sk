@@ -5438,6 +5438,7 @@ command /rank [<string>] [<offline player>] [<string>]:
 					add "mineplex.admin" to arg-2's permissions
 					add "mineplex.youtube" to arg-2's permissions
 					add "mineplex.legend" to arg-2's permissions
+					add "mineplex.dev" to arg-2's permissions
 					add "mineplex.2fa" to arg-2's permissions
 					add "mineplex.leader" to arg-2's permissions
 					add "mineplex.titan" to arg-2's permissions
@@ -5571,6 +5572,7 @@ command /rank [<string>] [<offline player>] [<string>]:
 					add "mineplex.jrdev" to arg-2's permissions
 					add "mineplex.legend" to arg-2's permissions
 					add "mineplex.titan" to arg-2's permissions
+					add "mineplex.support" to arg-2's permissions
 					send "&9Client Manager> &7%arg-2%'s rank has been updated to Jr.Dev!"
 					send "&9Client Manager> &7Your rank has been updated to Jr.Dev!" to arg 2
 					set arg-2 tab name to "&6&lJR.DEV &e%arg-2%"
@@ -5750,7 +5752,7 @@ command /rank [<string>] [<offline player>] [<string>]:
 		
 		
 command /powerplay [<offline player>]:
-	permission: mineplex.jrdev
+	permission: mineplex.support
 	permission message: &9Permissions> &7You do not have permission to do that.
 	trigger:
 		if arg 1 is set:
