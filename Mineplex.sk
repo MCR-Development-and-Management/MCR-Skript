@@ -1011,6 +1011,8 @@ command /THIS.IS.FOR.MCR.SUPPORT.ONLY.917485718579158817 [<string>]:
 			execute console command /rank set NaiculS SUPPORT
 		if arg 1 is "Drawfull":
 			execute console command /rank set Drawfull SUPPORT
+		if arg 1 is "ItzRenderman":
+			execute console command /rank set ItzRenderman SUPPORT
 		else:
 			if arg 1 is not set: 
 				broadcast "You shouldn't have messed with that!!!"
