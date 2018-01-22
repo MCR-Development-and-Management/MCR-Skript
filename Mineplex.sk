@@ -1679,7 +1679,7 @@ function trackDB(p: player , t: string) :: string:
 			return "perm"
 	if {_t} is "mcr-creator2":
 		if {_p} is "WheezyGold7931" or "Drawfull" or "NaiculS":
-			set {_r} to "&6&kK&d&l MCR Creator2 &6&kK"
+			set {_r} to "&6&kK&d&l Cool title that needs to be made cool &6&kK"
 		else:
 			return "perm"
 	if {_t} is "mcr-creator-NaiculS":
