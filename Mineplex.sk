@@ -988,7 +988,7 @@ command /mineplex-core [<string>] [<string>] [<string>]:
 
 command /help [<string>]:
 	trigger:
-		send "&9MCR> &7Please see &bhttps://github.com/NaiculS/MCR/wiki/Commands-and-Permissions &7for updated commands!"
+		send "&9MCR> &7Please see &bhttps://github.com/MCR-Development-and-Management/MCR-Skript/wiki/Commands-and-Permissions &7for updated commands!"
 
 command /recompile [<string>]:
 	aliases: /rec
