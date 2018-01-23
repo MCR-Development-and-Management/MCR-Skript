@@ -4135,7 +4135,7 @@ on join:
 			add "%player%" to {mineplex.totalaccounts.%ip address of player%::*}
 
 on load:
-	#set {_var::*} to contents from url "https://raw.githubusercontent.com/NaiculS/MCR/master/version.txt" Raw in GitHub does not update fast enough rip lel
+	#set {_var::*} to contents from url "https://raw.githubusercontent.com/MCR-Development-and-Management/MCR-Skript/master/version.txt" Raw in GitHub does not update fast enough rip lel
 	set {_ver} to line 1 from url "http://pastebin.com/raw/LG11nc8b" parsed as a number
 	set {_c} to "{@MCRVER}" parsed as a number
 	if {_c} is more than {_ver}:
