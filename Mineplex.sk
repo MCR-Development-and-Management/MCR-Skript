@@ -297,9 +297,6 @@ function parseRank(p: player , r: text) :: string:
 	if {_get} is "Admin":
 		set {mineplex.rank.%{_p}%} to "&4&lADMIN "
 		return "&4Admin"
-	if {_get} is "Apex":
-		set {mineplex.rank.%{_p}%} to "&9&lAPEX "
-		return "&9Apex"
 	if {_get} is "Leader":
 		set {mineplex.rank.%{_p}%} to "&4&lLEADER "
 		return "&4Leader"
@@ -365,8 +362,6 @@ function parseRankRaw(r: text) :: string:
 		set {_rank} to "&6&lC.MOD "
 	if {_get} is "Admin":
 		set {_rank} to "&4&lADMIN "
-	if {_get} is "Apex":
-		set {_rank} to "&9&lAPEX "
 	if {_get} is "Leader":
 		set {_rank} to "&4&lLEADER "
 	if {_get} is "Owner":
@@ -3737,13 +3732,6 @@ function rankLoad(p: player , n: number , t: number) :: string:
 			set {mineplex.colora.%{_p}%} to "§4"
 			set {mineplex.hover.%{_p}%} to "&4&lADMIN%nl%&fAn Administrator's role is to manage%nl%&ftheir respective Senoir Moderator team%nl%&fand all moderators within it."
 			return "&4Admin"
-		if {mineplex.rank.%{_p}%} is "&9&lAPEX ":
-			execute console command "/rank set %{_p}% APEX"
-			set {_p} tab name to "&9&lAPEX &e%{_p}%"
-			set {mineplex.displaya.%{_p}%} to "&9Apex"
-			set {mineplex.colora.%{_p}%} to "§4"
-			set {mineplex.hover.%{_p}%} to "&9&lAPEX%nl%&fStaff at Apex Hosting. These guys help support the test server!"
-			return "&9Apex"
 		if {mineplex.rank.%{_p}%} is "&4&lLEADER ":
 			execute console command "/rank set %{_p}% LEADER"
 			loop {mineplex.patreon::*}: #Do not worry about this. It only has to do with my test server, not you guys <3
@@ -3913,12 +3901,6 @@ function rankLoad(p: player , n: number , t: number) :: string:
 			set {mineplex.colora.%{_p}%} to "§4"
 			set {mineplex.hover.%{_p}%} to "&4&lADMIN%nl%&fAn Administrator's role is to manage%nl%&ftheir respective Senoir Moderator team%nl%&fand all moderators within it."
 			return "&4Admin"
-		if {mineplex.rank.%{_p}%} is "&9&lAPEX ":
-			set {_p} tab name to "&9&lAPEX &e%{_p}%"
-			set {mineplex.displaya.%{_p}%} to "&9Apex"
-			set {mineplex.colora.%{_p}%} to "§4"
-			set {mineplex.hover.%{_p}%} to "&9&lAPEX%nl%&fStaff at Apex Hosting. These guys help support the test server!"
-			return "&9Apex"
 		if {mineplex.rank.%{_p}%} is "&4&lLEADER ":
 			set {_p} tab name to "&4&lLEADER &e%{_p}%"
 			set {mineplex.displaya.%{_p}%} to "&4Leader"
