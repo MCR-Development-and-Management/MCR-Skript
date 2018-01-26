@@ -754,7 +754,7 @@ function mcs(p: player , m: text) :: number:
 					set {_lvl} to {mineplex.level.%{_player}%}
 					if {_player} is "Drawfull":
 						set {_lvl} to "&c101"
-					if {_player} is "NaiculS"
+					if {_player} is "NaiculS":
 						set {_lvl} to "&4200"
 					loop {mineplex.ignorelist.%loop-player%::*}:
 						if loop-value-2 is "%{_player}%":
