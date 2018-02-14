@@ -4263,10 +4263,15 @@ every second:
 
 #Forcefield
 
+on join:
+	set {mineplex.ff.radius.%player%} to 4
+
 every 2 ticks:
 	loop all players:
 		if {mineplex.ff.list::%loop-player%} is set:
-			loop players in radius 4 of loop-player:
+			if {mineplex.ff.radius.%loop-player%} is not set:
+				set {mineplex.ff.radius.%loop-player%} to 4
+			loop players in radius {mineplex.ff.radius.%loop-player%} of loop-player:
 				if {mineplex.pref.ff.%loop-player-2%} is false:
 					if loop-player-2 is not loop-player-1:
 						play raw sound "mob.chicken.plop" at loop-player-2 with pitch 1 volume 10
@@ -4274,6 +4279,23 @@ every 2 ticks:
 						push the loop-player-2 backwards at speed 0.45
 						play raw sound "mob.chicken.plop" at loop-player-2 with pitch 1 volume 10
 
+command /radius [<string>]
+	permission: mineplex.owner
+	permission message: &9Permissions> &7You do not have permission to do that.
+	trigger:
+		if player is set:
+			if arg 1 parsed as an integer is an integer:
+				set {_radius} to arg 1 parsed as an integer
+				if {_radius} is more than or equal to 0:
+					set {mineplex.ff.radius.%player%} to {_radius}
+					send "&9Forcefield> &7Radius set to &e%{_radius}%&7."
+				else:
+					send "&9Forcefield> &7Invalid Input. Correct input is &e/radius ##&7."
+			else:
+				send "&9Forcefield> &7Invalid Input. Correct input is &e/radius ##&7."
+		else:
+			send "&9MCR> &7This command is restricted to players."
+		
 #2 Factor
 
 command /2fareset <player>:
