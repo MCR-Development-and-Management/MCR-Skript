@@ -755,7 +755,7 @@ function mcs(p: player , m: text) :: number:
 					if {_player} is "Drawfull":
 						set {_lvl} to "&c101"
 					if {_player} is "NaiculS":
-						set {_lvl} to "&4200"
+						set {_lvl} to "&0200"
 					loop {mineplex.ignorelist.%loop-player%::*}:
 						if loop-value-2 is "%{_player}%":
 							set {_ignore.%loop-player-1%} to true
@@ -1674,12 +1674,12 @@ function trackDB(p: player , t: string) :: string:
 			return "perm"
 	if {_t} is "mcr-creator2":
 		if {_p} is "WheezyGold7931" or "Drawfull" or "NaiculS":
-			set {_r} to "&6&kK&d&l MCR Creator2 &6&kK"
+			set {_r} to "&6&kK&d&l THE ULTIMATE &6&kK"
 		else:
 			return "perm"
 	if {_t} is "mcr-creator-NaiculS":
 		if {_p} is "NaiculS":
-			set {_r} to "&6&kK&d&l NaiculS the King &6&kK"
+			set {_r} to "&6&kK&d&l NaiculS Da King &6&kK"
 		else:
 			return "perm"
 	if {_t} is "mcr-creator-Drawfull":
