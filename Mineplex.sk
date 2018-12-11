@@ -6348,7 +6348,7 @@ command /announce [<text>]:
 
 command /global [<text>]:
 	permission: mineplex.jrdev
-	permission message: &9Permissions> &7You do not have permission to do that.
+	permission message: &9Permissions> &7You do not have permission to do that
 	trigger:
 		if arg 1 is not set:
 			send "&9Message> &cErr...something went wrong?"
