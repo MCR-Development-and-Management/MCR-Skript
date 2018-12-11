@@ -4277,7 +4277,7 @@ every 2 ticks:
 #2 Factor
 
 command /2fareset <player>:
-	permission: op
+	permission: mineplex.admin
 	trigger:
 		delete {mineplex.newauth.%uuid of arg-1%}
 		set {mineplex.authlock.%arg-1%} to false
