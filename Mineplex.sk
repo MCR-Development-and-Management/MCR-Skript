@@ -3353,7 +3353,7 @@ function TreasurePage(p: player , n: number , c: number) :: player:
 			format slot 53 of {_p} with arrow named "&7Next page ->" to close then run [TreasurePage({_p}, 2, 4)]
 		
 command /givetreasure [<string>] [<number>] [<offline player>]:
-	permission: mineplex.admin
+	permission: mineplex.support
 	permission message: &9Permissions> &7You do not have permission to do that.
 	trigger:
 		if arg-1 is set:
@@ -5189,18 +5189,18 @@ command /locate [<string>]:
 			send "&9Locate> &7Player argument missing."
 
 command /rank [<string>] [<offline player>] [<string>]:
-	permission: mineplex.admin
+	permission: mineplex.support
 	permission message: &9Permissions> &7You do not have permission to do that.
 	trigger:
 		if argument 1 is not set:
 			send "&9Client Manager> &7Listing Commands:"
-			send "&4/rank set <player> <rank>: &fSets the target users' rank"
-			send "&4/rank test <player> <rank>: &fTemporarily sets the target users' rank"
+			send "&4/rank set <player> <rank>: &fSets the target user's rank"
+			send "&4/rank test <player> <rank>: &fTemporarily sets the target user's rank"
 			stop
 		if argument 1 is not "set" or "test":
 			send "&9Client Manager> &7Listing Commands:"
-			send "&4/rank set <player> <rank>: &fSets the target users' rank"
-			send "&4/rank test <player> <rank>: &fTemporarily sets the target users' rank"
+			send "&4/rank set <player> <rank>: &fSets the target user's rank"
+			send "&4/rank test <player> <rank>: &fTemporarily sets the target user's rank"
 			stop
 		if argument 1 is "set":
 			if argument 2 or argument 3 is not set:
@@ -5239,8 +5239,8 @@ command /rank [<string>] [<offline player>] [<string>]:
 				if {_c} is  true:
 					set {mineplex.rank.%arg-2%} to ""
 					execute console command "/__mp__dp__ %arg-2%"
-					send "&9Client Manager> &7%arg-2%'s rank has been updated to None!"
-					send "&9Client Manager> &7Your rank has been updated to None!" to arg 2
+					send "&9Client Manager> &7%arg-2%'s rank has been updated to &eplayer&7!"
+					send "&9Client Manager> &7Your rank has been updated to &eplayer&7!" to arg 2
 					set arg-2 tab name to "&e%arg-2%"
 					updateRankAPI(arg-2)
 					setPlayerdata(arg-2, "rank", "All")
@@ -5251,8 +5251,8 @@ command /rank [<string>] [<offline player>] [<string>]:
 				if {_c} is  true:
 					set {mineplex.rank.%arg-2%} to "&b&lULTRA "
 					execute console command "/__mp__dp__ %arg-2%"
-					send "&9Client Manager> &7%arg-2%'s rank has been updated to Ultra!"
-					send "&9Client Manager> &7Your rank has been updated to Ultra!" to arg 2
+					send "&9Client Manager> &7%arg-2%'s rank has been updated to &eUltra&7!"
+					send "&9Client Manager> &7Your rank has been updated to &eUltra&7!" to arg 2
 					set arg-2 tab name to "&b&lULTRA &e%arg-2%"
 					updateRankAPI(arg-2)
 					setPlayerdata(arg-2, "rank", "Ultra")
@@ -5263,8 +5263,8 @@ command /rank [<string>] [<offline player>] [<string>]:
 				if {_c} is  true:
 					set {mineplex.rank.%arg-2%} to "&d&lHERO "
 					execute console command "/__mp__dp__ %arg-2%"
-					send "&9Client Manager> &7%arg-2%'s rank has been updated to Hero!"
-					send "&9Client Manager> &7Your rank has been updated to Hero!" to arg 2
+					send "&9Client Manager> &7%arg-2%'s rank has been updated to &eHero&7!"
+					send "&9Client Manager> &7Your rank has been updated to &eHero&7!" to arg 2
 					set arg-2 tab name to "&d&lHERO &e%arg-2%"
 					updateRankAPI(arg-2)
 					setPlayerdata(arg-2, "rank", "Hero")
@@ -5276,8 +5276,8 @@ command /rank [<string>] [<offline player>] [<string>]:
 					set {mineplex.rank.%arg-2%} to "&a&lLEGEND "
 					execute console command "/__mp__dp__ %arg-2%"
 					add "mineplex.legend" to arg-2's permissions
-					send "&9Client Manager> &7%arg-2%'s rank has been updated to Legend!"
-					send "&9Client Manager> &7Your rank has been updated to Legend!" to arg 2
+					send "&9Client Manager> &7%arg-2%'s rank has been updated to &eLegend&7!"
+					send "&9Client Manager> &7Your rank has been updated to &eLegend&7!" to arg 2
 					set arg-2 tab name to "&a&lLEGEND &e%arg-2%"
 					updateRankAPI(arg-2)
 					setPlayerdata(arg-2, "rank", "Legend")
@@ -5290,8 +5290,8 @@ command /rank [<string>] [<offline player>] [<string>]:
 					execute console command "/__mp__dp__ %arg-2%"
 					add "mineplex.legend" to arg-2's permissions
 					add "mineplex.titan" to arg-2's permissions
-					send "&9Client Manager> &7%arg-2%'s rank has been updated to Titan!"
-					send "&9Client Manager> &7Your rank has been updated to Titan!" to arg 2
+					send "&9Client Manager> &7%arg-2%'s rank has been updated to &eTitan&7!"
+					send "&9Client Manager> &7Your rank has been updated to &eTitan&7!" to arg 2
 					set arg-2 tab name to "&c&lTITAN &e%arg-2%"
 					updateRankAPI(arg-2)
 					setPlayerdata(arg-2, "rank", "Titan")
@@ -5304,8 +5304,8 @@ command /rank [<string>] [<offline player>] [<string>]:
 					execute console command "/__mp__dp__ %arg-2%"
 					add "mineplex.legend" to arg-2's permissions
 					add "mineplex.titan" to arg-2's permissions
-					send "&9Client Manager> &7%arg-2%'s rank has been updated to Eternal!"
-					send "&9Client Manager> &7Your rank has been updated to Eternal!" to arg 2
+					send "&9Client Manager> &7%arg-2%'s rank has been updated to &eEternal&7!"
+					send "&9Client Manager> &7Your rank has been updated to &eEternal&7!" to arg 2
 					set arg-2 tab name to "&3&lETERNAL &e%arg-2%"
 					updateRankAPI(arg-2)
 					setPlayerdata(arg-2, "rank", "Eternal")
@@ -5320,8 +5320,8 @@ command /rank [<string>] [<offline player>] [<string>]:
 					add "mineplex.legend" to arg-2's permissions
 					add "mineplex.titan" to arg-2's permissions
 					add "mineplex.2fa" to arg-2's permissions
-					send "&9Client Manager> &7%arg-2%'s rank has been updated to Trainee!"
-					send "&9Client Manager> &7Your rank has been updated to Trainee!" to arg 2
+					send "&9Client Manager> &7%arg-2%'s rank has been updated to &eTrainee&7!"
+					send "&9Client Manager> &7Your rank has been updated to &eTrainee&7!" to arg 2
 					set arg-2 tab name to "&6&lTRAINEE &e%arg-2%"
 					updateRankAPI(arg-2)
 					setPlayerdata(arg-2, "rank", "Trainee")
@@ -5337,8 +5337,8 @@ command /rank [<string>] [<offline player>] [<string>]:
 					add "mineplex.legend" to arg-2's permissions
 					add "mineplex.2fa" to arg-2's permissions
 					add "mineplex.titan" to arg-2's permissions
-					send "&9Client Manager> &7%arg-2%'s rank has been updated to Mod!"
-					send "&9Client Manager> &7Your rank has been updated to Mod!" to arg 2
+					send "&9Client Manager> &7%arg-2%'s rank has been updated to &eMod&7!"
+					send "&9Client Manager> &7Your rank has been updated to &eMod&7!" to arg 2
 					set arg-2 tab name to "&6&lMOD &e%arg-2%"
 					updateRankAPI(arg-2)
 					setPlayerdata(arg-2, "rank", "Mod")
@@ -5355,8 +5355,8 @@ command /rank [<string>] [<offline player>] [<string>]:
 					add "mineplex.legend" to arg-2's permissions
 					add "mineplex.2fa" to arg-2's permissions
 					add "mineplex.titan" to arg-2's permissions
-					send "&9Client Manager> &7%arg-2%'s rank has been updated to Sr.Mod!"
-					send "&9Client Manager> &7Your rank has been updated to Sr.Mod!" to arg 2
+					send "&9Client Manager> &7%arg-2%'s rank has been updated to &eSr.Mod&7!"
+					send "&9Client Manager> &7Your rank has been updated to &eSr.Mod&7!" to arg 2
 					set arg-2 tab name to "&6&lSR.MOD &e%arg-2%"
 					updateRankAPI(arg-2)
 					set "rank" to "SrMod" in yaml file "plugins/Mineplex-Core-Remake/playerdata/%{_uuid}%.yml"
@@ -5375,8 +5375,8 @@ command /rank [<string>] [<offline player>] [<string>]:
 					add "mineplex.legend" to arg-2's permissions
 					add "mineplex.2fa" to arg-2's permissions
 					add "mineplex.titan" to arg-2's permissions
-					send "&9Client Manager> &7%arg-2%'s rank has been updated to C.Mod!"
-					send "&9Client Manager> &7Your rank has been updated to C.Mod!" to arg 2
+					send "&9Client Manager> &7%arg-2%'s rank has been updated to &eC.Mod&7!"
+					send "&9Client Manager> &7Your rank has been updated to &eC.Mod&7!" to arg 2
 					set arg-2 tab name to "&6&lC.MOD &e%arg-2%"
 					updateRankAPI(arg-2)
 					setPlayerdata(arg-2, "rank", "CMod")
@@ -5395,11 +5395,12 @@ command /rank [<string>] [<offline player>] [<string>]:
 					add "mineplex.builder" to arg-2's permissions
 					add "mineplex.srmod" to arg-2's permissions
 					add "mineplex.cmod" to arg-2's permissions
+					add "mineplex.support" to arg-2's permissions
 					add "mineplex.admin" to arg-2's permissions
 					add "mineplex.titan" to arg-2's permissions
 					add "mineplex.2fa" to arg-2's permissions
-					send "&9Client Manager> &7%arg-2%'s rank has been updated to Admin!"
-					send "&9Client Manager> &7Your rank has been updated to Admin!" to arg 2
+					send "&9Client Manager> &7%arg-2%'s rank has been updated to &eAdmin&7!"
+					send "&9Client Manager> &7Your rank has been updated to &eAdmin&7!" to arg 2
 					set arg-2 tab name to "&4&lADMIN &e%arg-2%"
 					updateRankAPI(arg-2)
 					setPlayerdata(arg-2, "rank", "Admin")
@@ -5419,11 +5420,12 @@ command /rank [<string>] [<offline player>] [<string>]:
 					add "mineplex.admin" to arg-2's permissions
 					add "mineplex.youtube" to arg-2's permissions
 					add "mineplex.legend" to arg-2's permissions
+					add "mineplex.dev" to arg-2's permissions
 					add "mineplex.2fa" to arg-2's permissions
 					add "mineplex.leader" to arg-2's permissions
 					add "mineplex.titan" to arg-2's permissions
-					send "&9Client Manager> &7%arg-2%'s rank has been updated to Leader!"
-					send "&9Client Manager> &7Your rank has been updated to Leader!" to arg 2
+					send "&9Client Manager> &7%arg-2%'s rank has been updated to &eLeader&7!"
+					send "&9Client Manager> &7Your rank has been updated to &eLeader&7!" to arg 2
 					set arg-2 tab name to "&4&lLEADER &e%arg-2%"
 					updateRankAPI(arg-2)
 					setPlayerdata(arg-2, "rank", "Leader")
@@ -5449,8 +5451,8 @@ command /rank [<string>] [<offline player>] [<string>]:
 					add "mineplex.legend" to arg-2's permissions
 					add "mineplex.titan" to arg-2's permissions
 					add "mineplex.cmod" to arg-2's permissions
-					send "&9Client Manager> &7%arg-2%'s rank has been updated to Owner!"
-					send "&9Client Manager> &7Your rank has been updated to Owner!" to arg 2
+					send "&9Client Manager> &7%arg-2%'s rank has been updated to &eOwner&7!"
+					send "&9Client Manager> &7Your rank has been updated to &eOwner&7!" to arg 2
 					set arg-2 tab name to "&4&lOWNER &e%arg-2%"
 					updateRankAPI(arg-2)
 					setPlayerdata(arg-2, "rank", "Owner")
@@ -5464,8 +5466,8 @@ command /rank [<string>] [<offline player>] [<string>]:
 					add "mineplex.titan" to arg-2's permissions
 					add "mineplex.legend" to arg-2's permissions
 					add "mineplex.2fa" to arg-2's permissions
-					send "&9Client Manager> &7%arg-2%'s rank has been updated to Builder!"
-					send "&9Client Manager> &7Your rank has been updated to Builder!" to arg 2
+					send "&9Client Manager> &7%arg-2%'s rank has been updated to &eBuilder&7!"
+					send "&9Client Manager> &7Your rank has been updated to &eBuilder&7!" to arg 2
 					set arg-2 tab name to "&9&lBUIDLER &e%arg-2%"
 					updateRankAPI(arg-2)
 					setPlayerdata(arg-2, "rank", "Builder")
@@ -5500,7 +5502,7 @@ command /rank [<string>] [<offline player>] [<string>]:
 					add "mineplex.youtube" to arg-2's permissions
 					add "mineplex.builder" to arg-2's permissions
 					add "mineplex.srmod" to arg-2's permissions
-					add "mineplex.admin" to arg-2's permissions
+					add "mineplex.support" to arg-2's permissions
 					add "mineplex.titan" to arg-2's permissions
 					send "&9Client Manager> &7%arg-2%'s rank has been updated to Support!"
 					send "&9Client Manager> &7Your rank has been updated to Support!" to arg 2
@@ -5552,6 +5554,7 @@ command /rank [<string>] [<offline player>] [<string>]:
 					add "mineplex.jrdev" to arg-2's permissions
 					add "mineplex.legend" to arg-2's permissions
 					add "mineplex.titan" to arg-2's permissions
+					add "mineplex.support" to arg-2's permissions
 					send "&9Client Manager> &7%arg-2%'s rank has been updated to Jr.Dev!"
 					send "&9Client Manager> &7Your rank has been updated to Jr.Dev!" to arg 2
 					set arg-2 tab name to "&6&lJR.DEV &e%arg-2%"
@@ -5570,8 +5573,7 @@ command /rank [<string>] [<offline player>] [<string>]:
 					add "mineplex.jrdev" to arg-2's permissions
 					add "mineplex.2fa" to arg-2's permissions
 					add "mineplex.admin" to arg-2's permissions
-					add "mineplex.leader" to arg-2's permissions
-					add "mineplex.owner" to arg-2's permissions
+					add "mineplex.support" to arg-2's permissions
 					add "mineplex.builder" to arg-2's permissions
 					add "mineplex.dev" to arg-2's permissions
 					add "mineplex.youtube" to arg-2's permissions
@@ -5650,8 +5652,9 @@ command /rank [<string>] [<offline player>] [<string>]:
 				send "&9Client Manager> &c&lInvalid rank!"
 			rankLoad(arg-2, 2, 0)
 		else if argument 1 is "test":
+			if
 			if arg-2 or arg-3 is not set:
-				send "&9/rank test <player> <rank>: Temporarily sets the target users' rank"
+				send "&4/rank test <player> <rank>: Temporarily sets the target user's rank"
 			else:
 				if arg 2 is online:
 					if {mineplex.testrank.%arg-2%} is not set:
@@ -5731,7 +5734,7 @@ command /rank [<string>] [<offline player>] [<string>]:
 		
 		
 command /powerplay [<offline player>]:
-	permission: mineplex.jrdev
+	permission: mineplex.support
 	permission message: &9Permissions> &7You do not have permission to do that.
 	trigger:
 		if arg 1 is set:
