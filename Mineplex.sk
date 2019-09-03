@@ -3983,7 +3983,7 @@ on flight toggle:
 on jump:
 	if player's gamemode is not creative:
 		if {doublejump.%uuid of player%} is not set:
-			if block below player is not air or water:
+			if block below player is not air or water or lava:
 				set player's flight state to true
 				set {doublejump.%uuid of player%} to true
 			else:
